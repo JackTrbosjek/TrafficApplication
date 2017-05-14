@@ -1,6 +1,10 @@
 package diplomski.jakov.trafficapplication.base;
 
 
+
+
+import com.orm.SugarContext;
+
 import diplomski.jakov.trafficapplication.dimodule.AppModule;
 import diplomski.jakov.trafficapplication.dimodule.DaggerNetComponent;
 import diplomski.jakov.trafficapplication.dimodule.NetComponent;
@@ -16,6 +20,13 @@ public class Application extends android.app.Application {
                 .appModule(new AppModule(this))
                 .netModule(new NetModule("https://api.baasic.com/v1/traffic-application/"))
                 .build();
+        SugarContext.init(this);
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        SugarContext.terminate();
     }
 
     public NetComponent getNetComponent() {
