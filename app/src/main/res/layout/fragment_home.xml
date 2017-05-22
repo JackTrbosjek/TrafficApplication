@@ -3,27 +3,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="diplomski.jakov.trafficapplication.HomeFragment"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context="diplomski.jakov.trafficapplication.HomeFragment">
 
-    <LinearLayout
+    <ScrollView
+        android:id="@+id/register_form"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="match_parent">
 
-        <ImageButton
-            android:id="@+id/camera_picture"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/ic_camera_picture" />
+            android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/camera_video"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/ic_camera_video" />
-    </LinearLayout>
+            <ImageButton
+                android:id="@+id/camera_picture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_camera_picture" />
 
+            <ImageButton
+                android:id="@+id/camera_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_camera_video" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

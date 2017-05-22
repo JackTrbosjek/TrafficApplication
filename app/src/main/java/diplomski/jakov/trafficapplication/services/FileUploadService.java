@@ -28,7 +28,7 @@ public class FileUploadService {
         this.preferenceService = preferenceService;
     }
 
-    public void uploadFile(LocalFile localFile) {
+    public void uploadFile(final LocalFile localFile) {
         File file = new File(localFile.localURI);
         RequestBody fbody = RequestBody.create(MediaType.parse("image/jpeg"), file);
         fileService.uploadFile("Bearer " + preferenceService.getToken(),
@@ -37,6 +37,9 @@ public class FileUploadService {
             public void onResponse(Call<FileUploadResponse> call, Response<FileUploadResponse> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show();
+                    localFile.sync = true;
+                    localFile.linkToFile = response.body()._links;
+                    localFile.save();
                 } else {
                     try {
                         Toast.makeText(context, response.errorBody().string(), Toast.LENGTH_LONG).show();

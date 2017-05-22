@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sync_now"
+        android:title="Sync Now"/>
+
+    <item
+        android:id="@+id/show_on_map"
+        android:title="Show On Map"/>
+
+    <item
+        android:id="@+id/delete_local"
+        android:title="Delete"/>
+</menu>

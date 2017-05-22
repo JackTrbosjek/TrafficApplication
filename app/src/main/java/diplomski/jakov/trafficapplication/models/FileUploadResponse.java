@@ -14,7 +14,7 @@ public class FileUploadResponse {
     public String fileName;
 
     @SerializedName("_links")
-    public Links links;
+    public String _links;
 
     public class Links {
         @SerializedName("stream")

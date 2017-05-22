@@ -10,13 +10,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.models.LocalFile;
+import diplomski.jakov.trafficapplication.services.FileUploadService;
 
 import java.util.List;
 
-public class FileFragment extends Fragment {
+import javax.inject.Inject;
 
-    private OnListFragmentInteractionListener mListener;
+public class FileFragment extends Fragment implements MyFileRecyclerViewAdapter.OnItemInteractionListener {
+    @Inject
+    FileUploadService fileUploadService;
+
+    MyFileRecyclerViewAdapter adapter;
 
     public FileFragment() {
     }
@@ -31,42 +37,39 @@ public class FileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((Application) getActivity().getApplication()).getNetComponent().inject(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_file_list, container, false);
-
+        adapter = new MyFileRecyclerViewAdapter(LocalFile.listAll(LocalFile.class, "DATE_CREATED DESC"), this, getContext());
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            recyclerView.setAdapter(new MyFileRecyclerViewAdapter(LocalFile.listAll(LocalFile.class,"DATE_CREATED DESC"), mListener, getContext()));
+            recyclerView.setAdapter(adapter);
         }
         return view;
     }
 
-
-/*    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnListFragmentInteractionListener");
-        }
+    @Override
+    public void onSyncClick(LocalFile item) {
+        fileUploadService.uploadFile(item);
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }*/
-
-    public interface OnListFragmentInteractionListener {
-        void onListFragmentInteraction(LocalFile item);
+    public void onDeleteClick(LocalFile item) {
+        item.delete();
+        adapter.removeItem(item);
     }
+
+    @Override
+    public void onShowOnMapClick(LocalFile item) {
+
+    }
+
+
 }
