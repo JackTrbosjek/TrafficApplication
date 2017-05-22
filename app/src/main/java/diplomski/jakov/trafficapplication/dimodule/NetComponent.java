@@ -4,6 +4,7 @@ import javax.inject.Singleton;
 
 import dagger.Component;
 import diplomski.jakov.trafficapplication.ActivateActivity;
+import diplomski.jakov.trafficapplication.HomeFragment;
 import diplomski.jakov.trafficapplication.LoginActivity;
 import diplomski.jakov.trafficapplication.RegisterActivity;
 
@@ -13,4 +14,5 @@ public interface NetComponent {
     void inject(LoginActivity activity);
     void inject(RegisterActivity activity);
     void inject(ActivateActivity activity);
+    void inject(HomeFragment fragment);
 }

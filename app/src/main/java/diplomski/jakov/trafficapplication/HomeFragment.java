@@ -15,18 +15,32 @@ import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.inject.Inject;
+
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 import diplomski.jakov.trafficapplication.models.LocalFile;
+import diplomski.jakov.trafficapplication.services.AuthenticationService;
+import diplomski.jakov.trafficapplication.services.FileService;
+import diplomski.jakov.trafficapplication.services.FileUploadService;
 import diplomski.jakov.trafficapplication.services.GPSService;
+import diplomski.jakov.trafficapplication.util.DateFormats;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -55,6 +69,7 @@ public class HomeFragment extends Fragment {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
+        ((Application) getActivity().getApplication()).getNetComponent().inject(this);
     }
 
     @Override
@@ -107,7 +122,7 @@ public class HomeFragment extends Fragment {
 
     private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = DateFormats.TimeStamp.format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
@@ -120,7 +135,7 @@ public class HomeFragment extends Fragment {
         localFile = new LocalFile();
         localFile.fileType = FileType.PHOTO;
         localFile.fileName = imageFileName;
-        localFile.fileExtension = ".mp4";
+        localFile.fileExtension = ".jpg";
         localFile.localURI = image.getAbsolutePath();
         localFile.dateCreated = new Date();
         localFile.sync = false;
@@ -139,7 +154,7 @@ public class HomeFragment extends Fragment {
 
     private File createVideoFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = DateFormats.TimeStamp.format(new Date());
         String videoFileName = "MP4_" + timeStamp + "_";
         File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File video = File.createTempFile(
@@ -157,6 +172,8 @@ public class HomeFragment extends Fragment {
         localFile.sync = false;
         localFile.recordType = RecordType.USER;
         localFile.save();
+
+        startLocationService(localFile.getId());
         return video;
     }
 
@@ -169,6 +186,7 @@ public class HomeFragment extends Fragment {
     public void videoClick() {
         dispatchTakeVideoIntent();
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

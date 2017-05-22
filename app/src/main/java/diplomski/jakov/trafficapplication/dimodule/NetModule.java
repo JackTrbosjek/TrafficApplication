@@ -13,6 +13,8 @@ import dagger.Module;
 import dagger.Provides;
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.services.AuthenticationService;
+import diplomski.jakov.trafficapplication.services.FileService;
+import diplomski.jakov.trafficapplication.services.FileUploadService;
 import diplomski.jakov.trafficapplication.services.PreferenceService;
 import diplomski.jakov.trafficapplication.services.UserService;
 import okhttp3.Cache;
@@ -82,6 +84,18 @@ public class NetModule {
     @Singleton
     AuthenticationService provideAuthenticationService(Retrofit retrofit) {
         return retrofit.create(AuthenticationService.class);
+    }
+
+    @Provides
+    @Singleton
+    FileService provideFileService(Retrofit retrofit) {
+        return retrofit.create(FileService.class);
+    }
+
+    @Provides
+    @Singleton
+    FileUploadService provideFileUploadService(FileService fileService, Application application, PreferenceService preferenceService) {
+        return new FileUploadService(fileService,application.getApplicationContext(),preferenceService);
     }
 
     @Provides
