@@ -1,25 +1,35 @@
 package diplomski.jakov.trafficapplication;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import com.squareup.picasso.Picasso;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import diplomski.jakov.trafficapplication.FileFragment.OnListFragmentInteractionListener;
-import diplomski.jakov.trafficapplication.dummy.DummyContent.DummyItem;
+import diplomski.jakov.trafficapplication.util.DateFormats;
+import diplomski.jakov.trafficapplication.util.VideoRequestHandler;
+import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.LocalFile;
 
+import java.io.File;
 import java.util.List;
 
 public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecyclerViewAdapter.ViewHolder> {
 
     private final List<LocalFile> mValues;
     private final OnListFragmentInteractionListener mListener;
+    private final Context context;
 
-    public MyFileRecyclerViewAdapter(List<LocalFile> items, OnListFragmentInteractionListener listener) {
+    public MyFileRecyclerViewAdapter(List<LocalFile> items, OnListFragmentInteractionListener listener, Context context) {
         mValues = items;
         mListener = listener;
+        this.context = context;
     }
 
     @Override
@@ -32,8 +42,14 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).fileName);
-        holder.mContentView.setText(mValues.get(position).linkToFile+" id:"+ holder.mItem.id);
+        holder.mDateCreated.setText(DateFormats.DateFormat.format(mValues.get(position).dateCreated));
+        holder.mLocation.setText("Locations:\nLat:" + Math.round(holder.mItem.latitude) + "Lon:" + Math.round(holder.mItem.longitude));
+        holder.mType.setText("Type:\n" + holder.mItem.fileType.name() + "-" + holder.mItem.recordType.name());
+        holder.mSync.setText("Sync:\n");
+        File file = new File(holder.mItem.localURI);
+        if (holder.mItem.fileType == FileType.PHOTO) {
+            Picasso.with(context).load(file).fit().centerInside().into(holder.mPreview);
+        }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,20 +70,28 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView mIdView;
-        public final TextView mContentView;
+        @BindView(R.id.item_date_created)
+        public TextView mDateCreated;
+        @BindView(R.id.item_location)
+        public TextView mLocation;
+        @BindView(R.id.item_type)
+        public TextView mType;
+        @BindView(R.id.item_sync)
+        public TextView mSync;
+        @BindView(R.id.item_preview)
+        public ImageView mPreview;
+
         public LocalFile mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = (TextView) view.findViewById(R.id.id);
-            mContentView = (TextView) view.findViewById(R.id.content);
+            ButterKnife.bind(this, view);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + mLocation.getText() + "'";
         }
     }
 }

@@ -1,12 +1,15 @@
 package diplomski.jakov.trafficapplication;
 
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
@@ -23,6 +26,7 @@ import butterknife.OnClick;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 import diplomski.jakov.trafficapplication.models.LocalFile;
+import diplomski.jakov.trafficapplication.services.GPSService;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -48,6 +52,9 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
     }
 
     @Override
@@ -55,7 +62,7 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        ButterKnife.bind(this,view);
+        ButterKnife.bind(this, view);
 
         return view;
     }
@@ -102,7 +109,7 @@ public class HomeFragment extends Fragment {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir =getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
@@ -111,7 +118,7 @@ public class HomeFragment extends Fragment {
 
 
         localFile = new LocalFile();
-        localFile.fileType = FileType.VIDEO;
+        localFile.fileType = FileType.PHOTO;
         localFile.fileName = imageFileName;
         localFile.fileExtension = ".mp4";
         localFile.localURI = image.getAbsolutePath();
@@ -119,14 +126,22 @@ public class HomeFragment extends Fragment {
         localFile.sync = false;
         localFile.recordType = RecordType.USER;
         localFile.save();
+
+        startLocationService(localFile.getId());
         return image;
+    }
+
+    private void startLocationService(Long id) {
+        Intent i = new Intent(getActivity(), GPSService.class);
+        i.putExtra(GPSService.FILE_ID_ARG, id);
+        getActivity().startService(i);
     }
 
     private File createVideoFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String videoFileName = "MP4_" + timeStamp + "_";
-        File storageDir =getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File video = File.createTempFile(
                 videoFileName,  /* prefix */
                 ".mp4",         /* suffix */
@@ -146,18 +161,18 @@ public class HomeFragment extends Fragment {
     }
 
     @OnClick(R.id.camera_picture)
-    public void cameraClick(){
+    public void cameraClick() {
         dispatchTakePictureIntent();
     }
 
     @OnClick(R.id.camera_video)
-    public void videoClick(){
+    public void videoClick() {
         dispatchTakeVideoIntent();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_TAKE_PHOTO && resultCode != RESULT_OK) {
+        if ((requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_TAKE_VIDEO) && resultCode != RESULT_OK) {
             localFile.delete();
         }
     }

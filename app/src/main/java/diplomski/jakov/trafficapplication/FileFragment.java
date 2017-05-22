@@ -10,18 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import diplomski.jakov.trafficapplication.dummy.DummyContent;
-import diplomski.jakov.trafficapplication.dummy.DummyContent.DummyItem;
 import diplomski.jakov.trafficapplication.models.LocalFile;
 
 import java.util.List;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
- */
 public class FileFragment extends Fragment {
 
     private OnListFragmentInteractionListener mListener;
@@ -51,7 +43,7 @@ public class FileFragment extends Fragment {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            recyclerView.setAdapter(new MyFileRecyclerViewAdapter(LocalFile.listAll(LocalFile.class), mListener));
+            recyclerView.setAdapter(new MyFileRecyclerViewAdapter(LocalFile.listAll(LocalFile.class,"DATE_CREATED DESC"), mListener, getContext()));
         }
         return view;
     }

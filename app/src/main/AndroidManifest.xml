@@ -9,6 +9,10 @@
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:name=".base.Application"
         android:allowBackup="true"
@@ -45,6 +49,7 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".services.GPSService" />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="diplomski.jakov.trafficapplication.fileprovider"
@@ -56,7 +61,7 @@
         </provider>
 
         <meta-data android:name="DATABASE" android:value="file.db" />
-        <meta-data android:name="VERSION" android:value="2" />
+        <meta-data android:name="VERSION" android:value="3" />
         <meta-data android:name="QUERY_LOG" android:value="true" />
         <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="diplomski.jakov.trafficapplication.models" />
     </application>

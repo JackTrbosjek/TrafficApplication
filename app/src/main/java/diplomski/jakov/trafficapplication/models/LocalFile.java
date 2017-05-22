@@ -3,7 +3,6 @@ package diplomski.jakov.trafficapplication.models;
 
 
 import com.orm.SugarRecord;
-import com.orm.dsl.Unique;
 
 import java.util.Date;
 
@@ -12,8 +11,6 @@ import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 
 
 public class LocalFile extends SugarRecord {
-    @Unique
-    public String id;
 
     public FileType fileType;
 
@@ -26,6 +23,8 @@ public class LocalFile extends SugarRecord {
     public double latitude;
 
     public double longitude;
+
+    public float accuracy;
 
     public String linkToFile;
 
