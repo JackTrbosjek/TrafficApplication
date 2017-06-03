@@ -2,9 +2,12 @@ package diplomski.jakov.trafficapplication;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.hardware.Camera;
+import android.hardware.camera2.CameraManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,6 +18,11 @@ import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import java.io.File;
@@ -24,7 +32,9 @@ import java.util.Date;
 
 import javax.inject.Inject;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
@@ -34,6 +44,7 @@ import diplomski.jakov.trafficapplication.services.AuthenticationService;
 import diplomski.jakov.trafficapplication.services.FileService;
 import diplomski.jakov.trafficapplication.services.FileUploadService;
 import diplomski.jakov.trafficapplication.services.GPSService;
+import diplomski.jakov.trafficapplication.util.CameraPreview;
 import diplomski.jakov.trafficapplication.util.DateFormats;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -52,6 +63,8 @@ public class HomeFragment extends Fragment {
 
     LocalFile localFile;
 
+    View mainView;
+
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -69,6 +82,9 @@ public class HomeFragment extends Fragment {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, 1);
+        }
         ((Application) getActivity().getApplication()).getNetComponent().inject(this);
     }
 
@@ -78,7 +94,7 @@ public class HomeFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         ButterKnife.bind(this, view);
-
+        mainView = view;
         return view;
     }
 
@@ -187,7 +203,49 @@ public class HomeFragment extends Fragment {
         dispatchTakeVideoIntent();
     }
 
+    @OnClick(R.id.proactive_mode_switch)
+    public void onProactiveClick(Switch proactiveSwitch) {
+        LinearLayout layout = (LinearLayout) mainView.findViewById(R.id.proactive_layout);
+        if (proactiveSwitch.isChecked()) {
+            layout.setVisibility(View.VISIBLE);
+        } else {
+            layout.setVisibility(View.GONE);
+        }
+    }
 
+    @OnClick(R.id.reactive_mode_switch)
+    public void onReactiveClick(Switch proactiveSwitch) {
+        LinearLayout layout = (LinearLayout) mainView.findViewById(R.id.reactive_layout);
+        if (proactiveSwitch.isChecked()) {
+            layout.setVisibility(View.VISIBLE);
+        } else {
+            layout.setVisibility(View.GONE);
+        }
+    }
+
+
+    @BindView(R.id.proactive_type)
+    Spinner proactiveTypeSp;
+    @BindView(R.id.interval)
+    EditText intervalEt;
+    @BindView(R.id.every_units)
+    Spinner everyUnitsSp;
+    @BindView(R.id.for_duration)
+    EditText forDurationEt;
+    @BindView(R.id.for_units)
+    Spinner forUnitsSp;
+
+
+    @OnClick(R.id.start_proactive)
+    public void startProactiveClick() {
+        Intent i = new Intent(getActivity(), CameraPreviewActivity.class);
+        startActivity(i);
+    }
+
+    @OnClick(R.id.start_reactive)
+    public void startReactiveClick(){
+
+    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_TAKE_VIDEO) && resultCode != RESULT_OK) {

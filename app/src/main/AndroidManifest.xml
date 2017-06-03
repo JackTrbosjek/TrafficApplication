@@ -2,30 +2,32 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="diplomski.jakov.trafficapplication">
 
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
+
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     <application
         android:name=".base.Application"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name=".LoginActivity"
-            android:label="@string/app_name">
-
-        </activity>
+            android:label="@string/app_name"></activity>
         <activity android:name=".RegisterActivity" />
         <activity android:name=".ActivateActivity">
             <intent-filter>
@@ -50,6 +52,7 @@
         </activity>
 
         <service android:name=".services.GPSService" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="diplomski.jakov.trafficapplication.fileprovider"
@@ -60,10 +63,22 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <meta-data android:name="DATABASE" android:value="file.db" />
-        <meta-data android:name="VERSION" android:value="3" />
-        <meta-data android:name="QUERY_LOG" android:value="true" />
-        <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="diplomski.jakov.trafficapplication.models" />
+        <meta-data
+            android:name="DATABASE"
+            android:value="file.db" />
+        <meta-data
+            android:name="VERSION"
+            android:value="3" />
+        <meta-data
+            android:name="QUERY_LOG"
+            android:value="true" />
+        <meta-data
+            android:name="DOMAIN_PACKAGE_NAME"
+            android:value="diplomski.jakov.trafficapplication.models" />
+
+        <activity
+            android:name=".CameraPreviewActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
     </application>
 
 </manifest>

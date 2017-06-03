@@ -20,4 +20,19 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string-array name="proactive_type">
+        <item>Picture</item>
+        <item>Video</item>
+    </string-array>
+    <string-array name="time_units">
+        <item>sec</item>
+        <item>min</item>
+        <item>hour</item>
+    </string-array>
+    <string-array name="duration_video_units">
+        <item>sec</item>
+        <item>min</item>
+        <item>hour</item>
+        <item>continual</item>
+    </string-array>
 </resources>
