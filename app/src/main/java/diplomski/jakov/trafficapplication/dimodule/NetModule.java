@@ -12,9 +12,11 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import diplomski.jakov.trafficapplication.base.Application;
+import diplomski.jakov.trafficapplication.models.LocalFile;
 import diplomski.jakov.trafficapplication.services.AuthenticationService;
 import diplomski.jakov.trafficapplication.services.FileService;
 import diplomski.jakov.trafficapplication.services.FileUploadService;
+import diplomski.jakov.trafficapplication.services.LocalFileService;
 import diplomski.jakov.trafficapplication.services.PreferenceService;
 import diplomski.jakov.trafficapplication.services.UserService;
 import okhttp3.Cache;
@@ -102,5 +104,11 @@ public class NetModule {
     @Singleton
     PreferenceService providesPreferencesService(SharedPreferences preferences){
         return new PreferenceService(preferences);
+    }
+
+    @Provides
+    @Singleton
+    LocalFileService providesLocalFileService(Application application){
+        return new LocalFileService(application);
     }
 }

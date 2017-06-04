@@ -2,6 +2,7 @@ package diplomski.jakov.trafficapplication.util;
 
 import android.content.Context;
 import android.hardware.Camera;
+import android.media.MediaRecorder;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
@@ -10,6 +11,7 @@ import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import java.io.IOException;
+import java.io.StringReader;
 
 import static android.content.ContentValues.TAG;
 import static android.content.Context.WINDOW_SERVICE;
@@ -17,11 +19,14 @@ import static android.content.Context.WINDOW_SERVICE;
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
+    MediaRecorder mMediaRecorder;
+    SurfaceCallback mSurfaceCallback;
 
-    public CameraPreview(Context context, Camera camera) {
+    public CameraPreview(Context context, Camera camera, MediaRecorder mediaRecorder, SurfaceCallback surfaceCallback) {
         super(context);
+        mSurfaceCallback = surfaceCallback;
         mCamera = camera;
-
+        mMediaRecorder = mediaRecorder;
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
         mHolder = getHolder();
@@ -38,10 +43,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } catch (IOException e) {
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
         }
+
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
         // empty. Take care of releasing the Camera preview in your activity.
+        mSurfaceCallback.surfaceDestroyed(holder);
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -62,33 +69,55 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         // set preview size and make any resize, rotate or
         // reformatting changes here
-
-        Camera.Parameters parameters = mCamera.getParameters();
-        Display display = ((WindowManager) getContext().getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-
-        if (display.getRotation() == Surface.ROTATION_0) {
-            mCamera.setDisplayOrientation(90);
-        }
-
-        if (display.getRotation() == Surface.ROTATION_90) {
-        }
-
-        if (display.getRotation() == Surface.ROTATION_180) {
-        }
-
-        if (display.getRotation() == Surface.ROTATION_270) {
-            mCamera.setDisplayOrientation(180);
-        }
-
-        mCamera.setParameters(parameters);
+        setCameraDisplayOrientation(Camera.CameraInfo.CAMERA_FACING_BACK);
 
         // start preview with new settings
         try {
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
-
+            mSurfaceCallback.surfaceCreated(holder);
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
+    }
+
+    public void setCameraDisplayOrientation(int cameraId) {
+        android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+
+        int rotation = ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+                .getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360; // compensate the mirror
+        } else { // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        mCamera.setDisplayOrientation(result);
+        if(mMediaRecorder != null){
+            mMediaRecorder.setOrientationHint(result);
+        }
+    }
+
+    public interface SurfaceCallback{
+        void surfaceCreated(SurfaceHolder holder);
+        void surfaceDestroyed(SurfaceHolder holder);
     }
 }

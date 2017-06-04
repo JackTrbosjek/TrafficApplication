@@ -44,7 +44,7 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(LOGSERVICE, "onStartCommand");
 
-        Long fileID = intent.getLongExtra(FILE_ID_ARG, -1);
+        Long fileID = intent.getLongExtra(FILE_ID_ARG, -1);//provjeri intent null
         if (fileID != -1) {
             LocalFile localFile = LocalFile.findById(LocalFile.class, fileID);
             if (localFile != null) {
@@ -53,6 +53,8 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
         }
         if (!mGoogleApiClient.isConnected())
             mGoogleApiClient.connect();
+        else
+            startLocationUpdate();
         return START_STICKY;
     }
 
@@ -62,7 +64,6 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
         Log.e(LOGSERVICE, "onConnected" + bundle);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
             return;
         }
         Location l = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -71,7 +72,6 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
             Log.e(LOGSERVICE, "lng " + l.getLongitude());
 
         }
-
         startLocationUpdate();
     }
 
