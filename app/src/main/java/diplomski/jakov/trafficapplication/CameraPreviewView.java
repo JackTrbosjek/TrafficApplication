@@ -56,9 +56,6 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
                 case HOUR:
                     videoTimeInMills *= 1000 * 60 * 60;
                     break;
-                case CONTINUAL:
-                    videoTimeInMills = Integer.MAX_VALUE;
-                    break;
             }
         }
     }
@@ -192,7 +189,7 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
                         mCamera.lock();         // take camera access back from MediaRecorder
                         hide();
                     }
-                }, 3000);
+                }, videoTimeInMills);
             }
         }
         if (fileType == FileType.PHOTO) {

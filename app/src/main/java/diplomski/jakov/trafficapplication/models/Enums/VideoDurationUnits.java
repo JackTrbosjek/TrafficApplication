@@ -3,7 +3,7 @@ package diplomski.jakov.trafficapplication.models.Enums;
 import android.content.Intent;
 
 public enum VideoDurationUnits {
-    SEC,MIN,HOUR,CONTINUAL;
+    SEC,MIN,HOUR;
     public static VideoDurationUnits from(int position) {
         switch (position) {
             case 0:
