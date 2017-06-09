@@ -40,6 +40,7 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
         mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         mWindowParams = createWindowParams(INITIAL_WIDTH, INITIAL_HEIGHT);
         this.localFileService = localFileService;
+        this.localFileDao = localFileDao;
         recordType = RecordType.PROACTIVE;
         this.fileType = fileType;
 

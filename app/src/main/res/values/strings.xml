@@ -33,6 +33,5 @@
         <item>sec</item>
         <item>min</item>
         <item>hour</item>
-        <item>continual</item>
     </string-array>
 </resources>

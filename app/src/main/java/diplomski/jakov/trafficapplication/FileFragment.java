@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.File;
+
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.database.LocalFileDao;
@@ -63,8 +65,11 @@ public class FileFragment extends Fragment implements MyFileRecyclerViewAdapter.
 
     @Override
     public void onDeleteClick(LocalFile item) {
-        localFileDao.deleteLocalFile(item);
-        adapter.removeItem(item);
+        File file = new File(item.localURI);
+        if (file.delete()) {
+            localFileDao.deleteLocalFile(item);
+            adapter.removeItem(item);
+        }
     }
 
     @Override

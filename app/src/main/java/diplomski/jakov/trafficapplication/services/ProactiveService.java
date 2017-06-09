@@ -28,7 +28,7 @@ import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
 
 public class ProactiveService extends Service {
     public static final String ARG_INTERVAL = "ProactiveService.class.argument_interval";
-    public static final String ARG_FOR_INTERVAL = "ProactiveService.class.argument_interval";
+    public static final String ARG_FOR_INTERVAL = "ProactiveService.class.argument_for_interval";
     public static final String STOP_INTENT = ProactiveService.class.getName() + "STOP_INTENT";
 
     int interval;
@@ -51,7 +51,7 @@ public class ProactiveService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        ((Application)getApplication()).getNetComponent().inject(this);
+        ((Application) getApplication()).getNetComponent().inject(this);
     }
 
     @Override
@@ -66,20 +66,38 @@ public class ProactiveService extends Service {
         interval = intent.getIntExtra(ARG_INTERVAL, -1);
         forInterval = intent.getIntExtra(ARG_FOR_INTERVAL, -1);
 
-        cameraPreviewView = new CameraPreviewView(getApplicationContext(),localFileDao,localFileService, fileType, videoDurationUnits, forInterval);
+        cameraPreviewView = new CameraPreviewView(getApplicationContext(), localFileDao, localFileService, fileType, videoDurationUnits, forInterval);
 
         createNotification();
+
+        createHandler();
+
+        return START_STICKY;
+    }
+
+    private void createHandler() {
+        long intervalInMills = interval;
+        switch (timeUnits) {
+            case SEC:
+                intervalInMills *= 1000;
+                break;
+            case MIN:
+                intervalInMills *= 1000 * 60;
+                break;
+            case HOUR:
+                intervalInMills *= 1000 * 60 * 60;
+                break;
+        }
         handler = new Handler();
+        final long finalIntervalInMills = intervalInMills;
         handlerRunnable = new Runnable() {
             @Override
             public void run() {
                 cameraPreviewView.show();
-                handler.postDelayed(this, 10000);
+                handler.postDelayed(this, finalIntervalInMills);
             }
         };
         handler.post(handlerRunnable);
-
-        return START_STICKY;
     }
 
     private void createNotification() {

@@ -12,8 +12,6 @@ public enum VideoDurationUnits {
                 return MIN;
             case 2:
                 return HOUR;
-            case 3:
-                return CONTINUAL;
             default:
                 return null;
         }

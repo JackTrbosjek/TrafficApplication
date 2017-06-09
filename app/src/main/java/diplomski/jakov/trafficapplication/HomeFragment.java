@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -24,6 +25,8 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnItemClick;
+import butterknife.OnItemSelected;
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
@@ -87,6 +90,8 @@ public class HomeFragment extends Fragment {
         super.onResume();
         if (isMyServiceRunning(ProactiveService.class)) {
             proactiveOptionsLayout.setVisibility(View.GONE);
+            proactiveLayout.setVisibility(View.VISIBLE);
+            proactiveSwitch.setChecked(true);
             btnStartProactive.setText("Stop Service");
         }
     }
@@ -131,27 +136,8 @@ public class HomeFragment extends Fragment {
         dispatchTakeVideoIntent();
     }
 
-    @OnClick(R.id.proactive_mode_switch)
-    public void onProactiveClick(Switch proactiveSwitch) {
-        LinearLayout layout = (LinearLayout) mainView.findViewById(R.id.proactive_layout);
-        if (proactiveSwitch.isChecked()) {
-            layout.setVisibility(View.VISIBLE);
-        } else {
-            layout.setVisibility(View.GONE);
-        }
-    }
 
-    @OnClick(R.id.reactive_mode_switch)
-    public void onReactiveClick(Switch proactiveSwitch) {
-        LinearLayout layout = (LinearLayout) mainView.findViewById(R.id.reactive_layout);
-        if (proactiveSwitch.isChecked()) {
-            layout.setVisibility(View.VISIBLE);
-        } else {
-            layout.setVisibility(View.GONE);
-        }
-    }
-
-
+    //region ProactiveMode
     @BindView(R.id.proactive_type)
     Spinner proactiveTypeSp;
     @BindView(R.id.interval)
@@ -166,27 +152,49 @@ public class HomeFragment extends Fragment {
     LinearLayout proactiveOptionsLayout;
     @BindView(R.id.start_proactive)
     Button btnStartProactive;
+    @BindView(R.id.proactive_layout)
+    LinearLayout proactiveLayout;
+    @BindView(R.id.video_duration_layout)
+    LinearLayout videoDurationLayout;
+    @BindView(R.id.proactive_mode_switch)
+    Switch proactiveSwitch;
+
+    @OnClick(R.id.proactive_mode_switch)
+    public void onProactiveClick(Switch aSwitch) {
+        if (aSwitch.isChecked()) {
+            proactiveLayout.setVisibility(View.VISIBLE);
+        } else {
+            proactiveLayout.setVisibility(View.GONE);
+        }
+    }
+
+    @OnItemSelected(R.id.proactive_type)
+    public void onProactiveTypeClick(Spinner typeSpinner) {
+        FileType fileType = FileType.from(typeSpinner.getSelectedItemPosition());
+        switch (fileType) {
+            case PHOTO:
+                videoDurationLayout.setVisibility(View.GONE);
+                break;
+            case VIDEO:
+                videoDurationLayout.setVisibility(View.VISIBLE);
+                break;
+        }
+    }
 
     @OnClick(R.id.start_proactive)
     public void startProactiveClick() {
+        hideKeyboard();
         if (isMyServiceRunning(ProactiveService.class)) {
             Intent i = new Intent(getActivity(), ProactiveService.class);
             getActivity().stopService(i);
             btnStartProactive.setText("Start Service");
+            proactiveOptionsLayout.setVisibility(View.VISIBLE);
             return;
         }
-        proactiveOptionsLayout.setVisibility(View.VISIBLE);
-        FileType fileType;
-        switch (proactiveTypeSp.getSelectedItemPosition()) {
-            case 0:
-                fileType = FileType.PHOTO;
-                break;
-            case 1:
-                fileType = FileType.VIDEO;
-                break;
-            default:
-                return;
-        }
+        proactiveOptionsLayout.setVisibility(View.GONE);
+        btnStartProactive.setText("Stop Service");
+        FileType fileType = FileType.from(proactiveTypeSp.getSelectedItemPosition());
+
         int interval = TextUtils.isEmpty(intervalEt.getText()) ? 5 : Integer.parseInt(intervalEt.getText().toString());
         TimeUnits timeUnits = TimeUnits.from(everyUnitsSp.getSelectedItemPosition());
         int forInterval = TextUtils.isEmpty(forDurationEt.getText()) ? 5 : Integer.parseInt(forDurationEt.getText().toString());
@@ -198,15 +206,27 @@ public class HomeFragment extends Fragment {
         timeUnits.attachTo(i);
         videoDurationUnits.attachTo(i);
         getActivity().startService(i);
-
         btnStartProactive.setText("Stop Service");
-
     }
+    //endregion
 
+    //region Reactive Mode
     @OnClick(R.id.start_reactive)
     public void startReactiveClick() {
 
     }
+
+    @OnClick(R.id.reactive_mode_switch)
+    public void onReactiveClick(Switch proactiveSwitch) {
+        LinearLayout layout = (LinearLayout) mainView.findViewById(R.id.reactive_layout);
+        if (proactiveSwitch.isChecked()) {
+            layout.setVisibility(View.VISIBLE);
+        } else {
+            layout.setVisibility(View.GONE);
+        }
+    }
+    //endregion
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -223,5 +243,12 @@ public class HomeFragment extends Fragment {
             }
         }
         return false;
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        inputManager.hideSoftInputFromWindow((null == getActivity().getCurrentFocus()) ? null : getActivity().getCurrentFocus().getWindowToken(),
+                InputMethodManager.HIDE_NOT_ALWAYS);
     }
 }
