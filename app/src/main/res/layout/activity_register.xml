@@ -16,6 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        android:textSize="25sp"
         android:text="Registration successful. Please check your email for activation link and open it with Traffic Application." />
 
     <ScrollView

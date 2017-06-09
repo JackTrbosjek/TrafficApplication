@@ -25,7 +25,7 @@ public class LocalFileService {
         mContext = context;
     }
 
-    public FileModel createImgeFileFromBytes(RecordType recordType, byte[] bytes) {
+    public FileModel createImageFileFromBytes(RecordType recordType, byte[] bytes) {
         Bitmap bm = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
         if (mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {

@@ -1,26 +1,22 @@
 package diplomski.jakov.trafficapplication;
 
 import android.app.Activity;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
+import android.content.Context;
+import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
-import android.os.Environment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -29,52 +25,87 @@ import javax.inject.Inject;
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
-import diplomski.jakov.trafficapplication.models.LocalFile;
+import diplomski.jakov.trafficapplication.models.Enums.TimeUnits;
+import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
 import diplomski.jakov.trafficapplication.services.LocalFileService;
 import diplomski.jakov.trafficapplication.util.CameraPreview;
-import diplomski.jakov.trafficapplication.util.DateFormats;
 
-public class CameraPreviewActivity extends Activity implements CameraPreview.SurfaceCallback {
-    Camera mCamera;
-    CameraPreview mPreview;
-    RecordType recordType;
-    FileType fileType;
-    @Inject
+public class CameraPreviewView implements CameraPreview.SurfaceCallback {
+    private static final int INITIAL_WIDTH = 270;
+    private static final int INITIAL_HEIGHT = 200;
+    private final Context mContext;
+    private final WindowManager mWindowManager;
+    private final WindowManager.LayoutParams mWindowParams;
+    private Camera mCamera;
+    private CameraPreview mPreview;
+    private RecordType recordType;
+    private FileType fileType;
     LocalFileService localFileService;
+    private int videoTimeInMills;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera_preview);
-        ((Application) getApplication()).getNetComponent().inject(this);
-        recordType = RecordType.detachFrom(getIntent());
-        fileType = FileType.detachFrom(getIntent());
-        if (recordType != null && fileType !=null) {
+    public CameraPreviewView(Context context, FileType fileType, VideoDurationUnits videoDurationUnits, int forInterval) {
+        mContext = context;
+        mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        mWindowParams = createWindowParams(INITIAL_WIDTH, INITIAL_HEIGHT);
+        localFileService = new LocalFileService(context);
+        recordType = RecordType.PROACTIVE;
+        this.fileType = fileType;
+
+        if (fileType == FileType.VIDEO) {
+            videoTimeInMills = forInterval;
+            switch (videoDurationUnits) {
+                case SEC:
+                    videoTimeInMills *= 1000;
+                    break;
+                case MIN:
+                    videoTimeInMills *= 1000 * 60;
+                    break;
+                case HOUR:
+                    videoTimeInMills *= 1000 * 60 * 60;
+                    break;
+                case CONTINUAL:
+                    videoTimeInMills = Integer.MAX_VALUE;
+                    break;
+            }
+        }
+    }
+
+    public void show() {
+        if (recordType != null && fileType != null) {
             mMediaRecorder = new MediaRecorder();
             mCamera = getCameraInstance();
-            mPreview = new CameraPreview(this, mCamera, mMediaRecorder, this);
-            FrameLayout cameraPreview = (FrameLayout) findViewById(R.id.camera_preview);
-            cameraPreview.addView(mPreview);
-
-            FrameLayout layout = (FrameLayout) findViewById(R.id.layout);
-            layout.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view) {
-                    finish();
-                }
-            });
-        }else{
-            finish();
+            mPreview = new CameraPreview(mContext, mCamera, mMediaRecorder, this);
         }
+        mWindowManager.addView(mPreview, mWindowParams);
+    }
+
+    public void hide() {
+        releaseCamera();
+        releaseMediaRecorder();
+        mWindowManager.removeView(mPreview);
+    }
+
+    private static WindowManager.LayoutParams createWindowParams(int width, int height) {
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        params.width = width;
+        params.height = height;
+        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+        params.format = PixelFormat.TRANSLUCENT;
+        params.gravity = Gravity.START | Gravity.TOP;
+        return params;
     }
 
     private Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] bytes, Camera camera) {
             if (bytes != null) {
-                LocalFileService.FileModel fileModel= localFileService.createImgeFileFromBytes(recordType,bytes);
-                finish();
+                LocalFileService.FileModel fileModel = localFileService.createImageFileFromBytes(recordType, bytes);
+                hide();
             }
 
         }
@@ -95,7 +126,7 @@ public class CameraPreviewActivity extends Activity implements CameraPreview.Sur
         // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
         mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
 
-        LocalFileService.FileModel fileModel =  localFileService.createVideoFile(recordType);
+        LocalFileService.FileModel fileModel = localFileService.createVideoFile(recordType);
         // Step 4: Set output file
         mMediaRecorder.setOutputFile(fileModel.file.getAbsolutePath());
 
@@ -131,13 +162,6 @@ public class CameraPreviewActivity extends Activity implements CameraPreview.Sur
         }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        releaseCamera();
-        releaseMediaRecorder();
-    }
-
     private void releaseCamera() {
         if (mCamera != null) {
             mCamera.release();        // release the camera for other applications
@@ -145,15 +169,6 @@ public class CameraPreviewActivity extends Activity implements CameraPreview.Sur
         }
     }
 
-
-    @Override
-    public void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        View view = getWindow().getDecorView();
-        WindowManager.LayoutParams lp = (WindowManager.LayoutParams) view.getLayoutParams();
-        lp.gravity = Gravity.RIGHT | Gravity.BOTTOM;
-        getWindowManager().updateViewLayout(view, lp);
-    }
 
     /**
      * A safe way to get an instance of the Camera object.
@@ -171,6 +186,7 @@ public class CameraPreviewActivity extends Activity implements CameraPreview.Sur
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+
         if (fileType == FileType.VIDEO) {
             if (prepareVideoRecorder()) {
                 mMediaRecorder.start();
@@ -181,9 +197,9 @@ public class CameraPreviewActivity extends Activity implements CameraPreview.Sur
                         mMediaRecorder.stop();  // stop the recording
                         releaseMediaRecorder(); // release the MediaRecorder object
                         mCamera.lock();         // take camera access back from MediaRecorder
-                        finish();
+                        hide();
                     }
-                }, 5000);
+                }, 3000);
             }
         }
         if (fileType == FileType.PHOTO) {

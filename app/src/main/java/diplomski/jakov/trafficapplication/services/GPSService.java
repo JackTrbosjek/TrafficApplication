@@ -43,18 +43,19 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(LOGSERVICE, "onStartCommand");
-
-        Long fileID = intent.getLongExtra(FILE_ID_ARG, -1);//provjeri intent null
-        if (fileID != -1) {
-            LocalFile localFile = LocalFile.findById(LocalFile.class, fileID);
-            if (localFile != null) {
-                fileList.add(localFile);
+        if (intent != null) {
+            Long fileID = intent.getLongExtra(FILE_ID_ARG, -1);
+            if (fileID != -1) {
+                LocalFile localFile = LocalFile.findById(LocalFile.class, fileID);
+                if (localFile != null) {
+                    fileList.add(localFile);
+                }
             }
+            if (!mGoogleApiClient.isConnected())
+                mGoogleApiClient.connect();
+            else
+                startLocationUpdate();
         }
-        if (!mGoogleApiClient.isConnected())
-            mGoogleApiClient.connect();
-        else
-            startLocationUpdate();
         return START_STICKY;
     }
 
@@ -86,7 +87,7 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
         Log.e(LOGSERVICE, "lat " + location.getLatitude());
         Log.e(LOGSERVICE, "lng " + location.getLongitude());
         //stop updates if no files
-        if(fileList == null || fileList.size() == 0){
+        if (fileList == null || fileList.size() == 0) {
             stopLocationUpdate();
         }
         if (location.getAccuracy() < 30) {

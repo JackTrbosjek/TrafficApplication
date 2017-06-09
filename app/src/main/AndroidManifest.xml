@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -43,7 +44,8 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="Traffic Application">
+            android:label="Traffic Application"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -52,6 +54,8 @@
         </activity>
 
         <service android:name=".services.GPSService" />
+        <service android:name=".services.ProactiveService" />
+
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -68,7 +72,7 @@
             android:value="file.db" />
         <meta-data
             android:name="VERSION"
-            android:value="3" />
+            android:value="4" />
         <meta-data
             android:name="QUERY_LOG"
             android:value="true" />
@@ -76,9 +80,6 @@
             android:name="DOMAIN_PACKAGE_NAME"
             android:value="diplomski.jakov.trafficapplication.models" />
 
-        <activity
-            android:name=".CameraPreviewActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
     </application>
 
 </manifest>
