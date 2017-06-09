@@ -13,16 +13,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
+import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
-import diplomski.jakov.trafficapplication.models.LocalFile;
+import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.util.DateFormats;
 
 public class LocalFileService {
     private Context mContext;
+    private LocalFileDao localFileDao;
 
-    public LocalFileService(Context context) {
+    public LocalFileService(Context context, LocalFileDao localFileDao) {
         mContext = context;
+        this.localFileDao = localFileDao;
     }
 
     public FileModel createImageFileFromBytes(RecordType recordType, byte[] bytes) {
@@ -61,9 +64,9 @@ public class LocalFileService {
         localFile.dateCreated = new Date();
         localFile.sync = false;
         localFile.recordType = recordType;
-        localFile.save();
+        localFile.id = localFileDao.insertLocalFile(localFile);
 
-        startLocationService(localFile.getId());
+        startLocationService(localFile.id);
 
         return new FileModel(image,localFile);
     }
@@ -94,9 +97,9 @@ public class LocalFileService {
         localFile.dateCreated = new Date();
         localFile.sync = false;
         localFile.recordType = recordType;
-        localFile.save();
+        localFile.id = localFileDao.insertLocalFile(localFile);
 
-        startLocationService(localFile.getId());
+        startLocationService(localFile.id);
         return new FileModel(image, localFile);
     }
 
@@ -125,13 +128,13 @@ public class LocalFileService {
         localFile.dateCreated = new Date();
         localFile.sync = false;
         localFile.recordType = recordType;
-        localFile.save();
+        localFile.id  = localFileDao.insertLocalFile(localFile);
 
-        startLocationService(localFile.getId());
+        startLocationService(localFile.id);
         return new FileModel(video, localFile);
     }
 
-    private void startLocationService(Long id) {
+    private void startLocationService(long id) {
         Intent i = new Intent(mContext, GPSService.class);
         i.putExtra(GPSService.FILE_ID_ARG, id);
         mContext.startService(i);

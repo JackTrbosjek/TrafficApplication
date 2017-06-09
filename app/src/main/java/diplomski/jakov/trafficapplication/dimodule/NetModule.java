@@ -1,5 +1,6 @@
 package diplomski.jakov.trafficapplication.dimodule;
 
+import android.arch.persistence.room.Room;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
@@ -12,7 +13,8 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import diplomski.jakov.trafficapplication.base.Application;
-import diplomski.jakov.trafficapplication.models.LocalFile;
+import diplomski.jakov.trafficapplication.database.AppDatabase;
+import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.services.AuthenticationService;
 import diplomski.jakov.trafficapplication.services.FileService;
 import diplomski.jakov.trafficapplication.services.FileUploadService;
@@ -96,8 +98,8 @@ public class NetModule {
 
     @Provides
     @Singleton
-    FileUploadService provideFileUploadService(FileService fileService, Application application, PreferenceService preferenceService) {
-        return new FileUploadService(fileService,application.getApplicationContext(),preferenceService);
+    FileUploadService provideFileUploadService(FileService fileService, Application application, PreferenceService preferenceService, LocalFileDao localFileDao) {
+        return new FileUploadService(fileService,application.getApplicationContext(),preferenceService, localFileDao);
     }
 
     @Provides
@@ -108,7 +110,20 @@ public class NetModule {
 
     @Provides
     @Singleton
-    LocalFileService providesLocalFileService(Application application){
-        return new LocalFileService(application);
+    AppDatabase provideRoomDatabase(Application application){
+        return Room.databaseBuilder(application,AppDatabase.class,"LocalFileDatabase").allowMainThreadQueries().build();
+    }
+
+    @Provides
+    @Singleton
+    LocalFileDao provideLocalFileDao(AppDatabase appDatabase){
+        return appDatabase.localFileDao();
+    }
+
+    @Provides
+    @Singleton
+    LocalFileService providesLocalFileService(Application application, LocalFileDao localFileDao){
+
+        return new LocalFileService(application, localFileDao);
     }
 }

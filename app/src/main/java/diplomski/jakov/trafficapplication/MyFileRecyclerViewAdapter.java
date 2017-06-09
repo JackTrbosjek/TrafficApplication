@@ -18,9 +18,8 @@ import com.squareup.picasso.Picasso;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import diplomski.jakov.trafficapplication.util.DateFormats;
-import diplomski.jakov.trafficapplication.util.VideoRequestHandler;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
-import diplomski.jakov.trafficapplication.models.LocalFile;
+import diplomski.jakov.trafficapplication.database.LocalFile;
 
 import java.io.File;
 import java.util.List;

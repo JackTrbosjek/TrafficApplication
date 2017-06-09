@@ -1,16 +1,18 @@
-package diplomski.jakov.trafficapplication.models;
+package diplomski.jakov.trafficapplication.database;
 
 
-
-import com.orm.SugarRecord;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 
 import java.util.Date;
 
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 
-
-public class LocalFile extends SugarRecord {
+@Entity
+public class LocalFile {
+    @PrimaryKey(autoGenerate = true)
+    public long id;
 
     public FileType fileType;
 

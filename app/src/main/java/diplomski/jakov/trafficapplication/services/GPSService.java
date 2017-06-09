@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ListFragment;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -19,9 +18,12 @@ import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-import diplomski.jakov.trafficapplication.models.LocalFile;
+import javax.inject.Inject;
+
+import diplomski.jakov.trafficapplication.base.Application;
+import diplomski.jakov.trafficapplication.database.LocalFile;
+import diplomski.jakov.trafficapplication.database.LocalFileDao;
 
 public class GPSService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
     private LocationRequest mLocationRequest;
@@ -32,9 +34,13 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
 
     private ArrayList<LocalFile> fileList = new ArrayList<>();
 
+    @Inject
+    LocalFileDao localFileDao;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        ((Application)getApplication()).getNetComponent().inject(this);
         buildGoogleApiClient();
         Log.e(LOGSERVICE, "onCreate");
 
@@ -44,9 +50,9 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(LOGSERVICE, "onStartCommand");
         if (intent != null) {
-            Long fileID = intent.getLongExtra(FILE_ID_ARG, -1);
+            long fileID = intent.getLongExtra(FILE_ID_ARG, -1);
             if (fileID != -1) {
-                LocalFile localFile = LocalFile.findById(LocalFile.class, fileID);
+                LocalFile localFile = localFileDao.getLocalFile(fileID);
                 if (localFile != null) {
                     fileList.add(localFile);
                 }
@@ -108,7 +114,7 @@ public class GPSService extends Service implements GoogleApiClient.ConnectionCal
         file.latitude = location.getLatitude();
         file.longitude = location.getLongitude();
         file.accuracy = location.getAccuracy();
-        file.save();
+        localFileDao.updateLocalFile(file);
         fileList.remove(file);
     }
 

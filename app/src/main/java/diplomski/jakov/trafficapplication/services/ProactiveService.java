@@ -15,9 +15,13 @@ import android.support.v4.app.TaskStackBuilder;
 import java.util.Objects;
 import java.util.Random;
 
+import javax.inject.Inject;
+
 import diplomski.jakov.trafficapplication.CameraPreviewView;
 import diplomski.jakov.trafficapplication.MainActivity;
 import diplomski.jakov.trafficapplication.R;
+import diplomski.jakov.trafficapplication.base.Application;
+import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.TimeUnits;
 import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
@@ -38,6 +42,18 @@ public class ProactiveService extends Service {
     int mNotificationId;
     NotificationManager mNotificationManager;
 
+    @Inject
+    LocalFileDao localFileDao;
+
+    @Inject
+    LocalFileService localFileService;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        ((Application)getApplication()).getNetComponent().inject(this);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null || (intent.getAction() != null && intent.getAction().contentEquals(STOP_INTENT))) {
@@ -50,7 +66,7 @@ public class ProactiveService extends Service {
         interval = intent.getIntExtra(ARG_INTERVAL, -1);
         forInterval = intent.getIntExtra(ARG_FOR_INTERVAL, -1);
 
-        cameraPreviewView = new CameraPreviewView(getApplicationContext(), fileType, videoDurationUnits, forInterval);
+        cameraPreviewView = new CameraPreviewView(getApplicationContext(),localFileDao,localFileService, fileType, videoDurationUnits, forInterval);
 
         createNotification();
         handler = new Handler();

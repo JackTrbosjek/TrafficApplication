@@ -3,7 +3,6 @@ package diplomski.jakov.trafficapplication;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,16 +10,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import diplomski.jakov.trafficapplication.base.Application;
-import diplomski.jakov.trafficapplication.models.LocalFile;
+import diplomski.jakov.trafficapplication.database.LocalFile;
+import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.services.FileUploadService;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
 public class FileFragment extends Fragment implements MyFileRecyclerViewAdapter.OnItemInteractionListener {
     @Inject
     FileUploadService fileUploadService;
+
+    @Inject
+    LocalFileDao localFileDao;
 
     MyFileRecyclerViewAdapter adapter;
 
@@ -44,7 +45,7 @@ public class FileFragment extends Fragment implements MyFileRecyclerViewAdapter.
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_file_list, container, false);
-        adapter = new MyFileRecyclerViewAdapter(LocalFile.listAll(LocalFile.class, "DATE_CREATED DESC"), this, getContext());
+        adapter = new MyFileRecyclerViewAdapter(localFileDao.getAllLocalFiles(), this, getContext());
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
@@ -62,7 +63,7 @@ public class FileFragment extends Fragment implements MyFileRecyclerViewAdapter.
 
     @Override
     public void onDeleteClick(LocalFile item) {
-        item.delete();
+        localFileDao.deleteLocalFile(item);
         adapter.removeItem(item);
     }
 

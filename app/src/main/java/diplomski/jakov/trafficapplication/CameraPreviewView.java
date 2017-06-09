@@ -1,31 +1,22 @@
 package diplomski.jakov.trafficapplication;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.inject.Inject;
-
-import diplomski.jakov.trafficapplication.base.Application;
+import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
-import diplomski.jakov.trafficapplication.models.Enums.TimeUnits;
 import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
 import diplomski.jakov.trafficapplication.services.LocalFileService;
 import diplomski.jakov.trafficapplication.util.CameraPreview;
@@ -41,13 +32,14 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
     private RecordType recordType;
     private FileType fileType;
     LocalFileService localFileService;
+    LocalFileDao localFileDao;
     private int videoTimeInMills;
 
-    public CameraPreviewView(Context context, FileType fileType, VideoDurationUnits videoDurationUnits, int forInterval) {
+    public CameraPreviewView(Context context, LocalFileDao localFileDao, LocalFileService localFileService, FileType fileType, VideoDurationUnits videoDurationUnits, int forInterval) {
         mContext = context;
         mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         mWindowParams = createWindowParams(INITIAL_WIDTH, INITIAL_HEIGHT);
-        localFileService = new LocalFileService(context);
+        this.localFileService = localFileService;
         recordType = RecordType.PROACTIVE;
         this.fileType = fileType;
 
@@ -140,12 +132,12 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
         } catch (IllegalStateException e) {
             Log.d("Video preview error", "IllegalStateException preparing MediaRecorder: " + e.getMessage());
             releaseMediaRecorder();
-            fileModel.localFile.delete();
+            localFileDao.deleteLocalFile(fileModel.localFile);
             return false;
         } catch (IOException e) {
             Log.d("Video preview error", "IOException preparing MediaRecorder: " + e.getMessage());
             releaseMediaRecorder();
-            fileModel.localFile.delete();
+            localFileDao.deleteLocalFile(fileModel.localFile);
             return false;
         }
         return true;

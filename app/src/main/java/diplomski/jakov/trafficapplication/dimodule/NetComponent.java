@@ -9,6 +9,8 @@ import diplomski.jakov.trafficapplication.FileFragment;
 import diplomski.jakov.trafficapplication.HomeFragment;
 import diplomski.jakov.trafficapplication.LoginActivity;
 import diplomski.jakov.trafficapplication.RegisterActivity;
+import diplomski.jakov.trafficapplication.services.GPSService;
+import diplomski.jakov.trafficapplication.services.ProactiveService;
 
 @Singleton
 @Component(modules={AppModule.class, NetModule.class})
@@ -18,5 +20,6 @@ public interface NetComponent {
     void inject(ActivateActivity activity);
     void inject(HomeFragment fragment);
     void inject(FileFragment fragment);
-    void inject(CameraPreviewView activity);
+    void inject(ProactiveService proactiveService);
+    void inject(GPSService gpsService);
 }

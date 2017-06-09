@@ -1,18 +1,12 @@
 package diplomski.jakov.trafficapplication;
 
 
-import android.Manifest;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
@@ -24,11 +18,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.Toast;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
 
 import javax.inject.Inject;
 
@@ -36,15 +25,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import diplomski.jakov.trafficapplication.base.Application;
+import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 import diplomski.jakov.trafficapplication.models.Enums.TimeUnits;
 import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
-import diplomski.jakov.trafficapplication.models.LocalFile;
-import diplomski.jakov.trafficapplication.services.GPSService;
+import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.services.LocalFileService;
 import diplomski.jakov.trafficapplication.services.ProactiveService;
-import diplomski.jakov.trafficapplication.util.DateFormats;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -61,6 +49,9 @@ public class HomeFragment extends Fragment {
 
     @Inject
     LocalFileService localFileService;
+
+    @Inject
+    LocalFileDao localFileDao;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -220,7 +211,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_TAKE_VIDEO) && resultCode != RESULT_OK) {
-            localFile.delete();
+            localFileDao.deleteLocalFile(localFile);
         }
     }
 
