@@ -1,19 +1,15 @@
-package diplomski.jakov.trafficapplication.models;
+package diplomski.jakov.trafficapplication.rest.models;
 
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Date;
 
-public class RegisterResponseModel {
-
-    @SerializedName("creationDate")
-    public Date creationDate;
+public class UserInfoResponse {
+    @SerializedName("displayName")
+    public String displayName;
 
     @SerializedName("email")
     public String email;
-
-    @SerializedName("name")
-    public String name;
 
     @SerializedName("userName")
     public String userName;

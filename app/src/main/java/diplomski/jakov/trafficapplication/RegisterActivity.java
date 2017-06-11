@@ -17,9 +17,10 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.base.BaseActivity;
-import diplomski.jakov.trafficapplication.models.RegisterModel;
-import diplomski.jakov.trafficapplication.models.RegisterResponseModel;
-import diplomski.jakov.trafficapplication.services.AuthenticationService;
+import diplomski.jakov.trafficapplication.rest.models.RegisterModel;
+import diplomski.jakov.trafficapplication.rest.models.RegisterResponseModel;
+import diplomski.jakov.trafficapplication.rest.services.AuthenticationService;
+import diplomski.jakov.trafficapplication.services.PreferenceService;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -28,6 +29,9 @@ public class RegisterActivity extends BaseActivity {
 
     @Inject
     AuthenticationService authenticationService;
+
+    @Inject
+    PreferenceService preferenceService;
 
     @BindView(R.id.email)
     EditText mEmailView;
@@ -50,7 +54,7 @@ public class RegisterActivity extends BaseActivity {
 
     @OnClick(R.id.register_button)
     public void register() {
-        RegisterModel registerModel = new RegisterModel(mEmailView.getText().toString(),mPasswordView.getText().toString(),mConfirmPasswordView.getText().toString());
+        final RegisterModel registerModel = new RegisterModel(mEmailView.getText().toString(),mPasswordView.getText().toString(),mConfirmPasswordView.getText().toString());
         if (!validateRegisterData(registerModel)) {
             return;
         }

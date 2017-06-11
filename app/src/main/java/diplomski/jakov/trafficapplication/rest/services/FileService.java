@@ -1,8 +1,7 @@
-package diplomski.jakov.trafficapplication.services;
+package diplomski.jakov.trafficapplication.rest.services;
 
-import diplomski.jakov.trafficapplication.models.FileUploadResponse;
+import diplomski.jakov.trafficapplication.rest.models.FileUploadResponse;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;

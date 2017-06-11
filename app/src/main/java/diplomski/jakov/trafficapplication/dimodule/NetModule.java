@@ -15,12 +15,12 @@ import dagger.Provides;
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.database.AppDatabase;
 import diplomski.jakov.trafficapplication.database.LocalFileDao;
-import diplomski.jakov.trafficapplication.services.AuthenticationService;
-import diplomski.jakov.trafficapplication.services.FileService;
+import diplomski.jakov.trafficapplication.rest.services.AuthenticationService;
+import diplomski.jakov.trafficapplication.rest.services.DynamicResourceService;
+import diplomski.jakov.trafficapplication.rest.services.FileService;
 import diplomski.jakov.trafficapplication.services.FileUploadService;
 import diplomski.jakov.trafficapplication.services.LocalFileService;
 import diplomski.jakov.trafficapplication.services.PreferenceService;
-import diplomski.jakov.trafficapplication.services.UserService;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -80,14 +80,14 @@ public class NetModule {
 
     @Provides
     @Singleton
-    UserService provideUserService(Retrofit retrofit) {
-        return retrofit.create(UserService.class);
+    AuthenticationService provideAuthenticationService(Retrofit retrofit) {
+        return retrofit.create(AuthenticationService.class);
     }
 
     @Provides
     @Singleton
-    AuthenticationService provideAuthenticationService(Retrofit retrofit) {
-        return retrofit.create(AuthenticationService.class);
+    DynamicResourceService provideDynamicResourceService(Retrofit retrofit) {
+        return retrofit.create(DynamicResourceService.class);
     }
 
     @Provides
@@ -98,31 +98,31 @@ public class NetModule {
 
     @Provides
     @Singleton
-    FileUploadService provideFileUploadService(FileService fileService, Application application, PreferenceService preferenceService, LocalFileDao localFileDao) {
-        return new FileUploadService(fileService,application.getApplicationContext(),preferenceService, localFileDao);
+    FileUploadService provideFileUploadService(FileService fileService, Application application, PreferenceService preferenceService, LocalFileDao localFileDao, AuthenticationService authenticationService, DynamicResourceService dynamicResourceService) {
+        return new FileUploadService(fileService, application.getApplicationContext(), preferenceService, localFileDao, authenticationService, dynamicResourceService);
     }
 
     @Provides
     @Singleton
-    PreferenceService providesPreferencesService(SharedPreferences preferences){
+    PreferenceService providesPreferencesService(SharedPreferences preferences) {
         return new PreferenceService(preferences);
     }
 
     @Provides
     @Singleton
-    AppDatabase provideRoomDatabase(Application application){
-        return Room.databaseBuilder(application,AppDatabase.class,"LocalFileDatabase").allowMainThreadQueries().build();
+    AppDatabase provideRoomDatabase(Application application) {
+        return Room.databaseBuilder(application, AppDatabase.class, "LocalFileDatabase").allowMainThreadQueries().build();
     }
 
     @Provides
     @Singleton
-    LocalFileDao provideLocalFileDao(AppDatabase appDatabase){
+    LocalFileDao provideLocalFileDao(AppDatabase appDatabase) {
         return appDatabase.localFileDao();
     }
 
     @Provides
     @Singleton
-    LocalFileService providesLocalFileService(Application application, LocalFileDao localFileDao){
+    LocalFileService providesLocalFileService(Application application, LocalFileDao localFileDao) {
 
         return new LocalFileService(application, localFileDao);
     }

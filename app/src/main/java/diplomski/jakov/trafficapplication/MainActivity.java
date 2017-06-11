@@ -13,8 +13,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import javax.inject.Inject;
+
+import diplomski.jakov.trafficapplication.base.Application;
+import diplomski.jakov.trafficapplication.services.PreferenceService;
+
 public class MainActivity extends AppCompatActivity {
 
+    @Inject
+    PreferenceService preferenceService;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -39,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((Application) getApplication()).getNetComponent().inject(this);
+        if(!checkUser()){
+            Intent i = new Intent(this,LoginActivity.class);
+            startActivity(i);
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_main);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
@@ -61,6 +75,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
             }
         }
+    }
+
+    private boolean checkUser() {
+        return !preferenceService.getUsername().contentEquals("");
     }
 
 }
