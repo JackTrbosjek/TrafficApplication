@@ -1,7 +1,6 @@
 package diplomski.jakov.trafficapplication;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,7 +14,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.base.BaseActivity;
-import diplomski.jakov.trafficapplication.services.AuthenticationService;
+import diplomski.jakov.trafficapplication.rest.services.AuthenticationService;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;

@@ -1,6 +1,5 @@
 package diplomski.jakov.trafficapplication.base;
 
-
 import diplomski.jakov.trafficapplication.dimodule.AppModule;
 import diplomski.jakov.trafficapplication.dimodule.DaggerNetComponent;
 import diplomski.jakov.trafficapplication.dimodule.NetComponent;

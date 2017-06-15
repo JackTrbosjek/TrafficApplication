@@ -1,4 +1,4 @@
-package diplomski.jakov.trafficapplication.models;
+package diplomski.jakov.trafficapplication.rest.models;
 
 
 import com.google.gson.annotations.SerializedName;
