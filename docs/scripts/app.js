@@ -33,7 +33,7 @@ var application = new baasicSdkJavaScript.BaasicApp('traffic-application', optio
             var contentString = '';
             var date = new Date(item.date_created);
             if (item.is_image) {
-                contentString = '<p>' + date.toLocaleString() + '</p><img src="' + item.file_url + '" height="150" width="150"/>';
+                contentString = '<p>' + date.toLocaleString() + '</p><img src="' + item.file_url + '?width=150&height=150" height="150" width="150"/>';
             } else {
                 contentString = '<p>' + date.toLocaleString() + '</p><video width="320" height="240" controls>  <source src="' + item.file_url + '" type="video/mp4"></video>';
             }

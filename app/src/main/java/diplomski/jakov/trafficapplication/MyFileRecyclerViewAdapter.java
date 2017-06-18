@@ -1,6 +1,8 @@
 package diplomski.jakov.trafficapplication;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -68,6 +70,15 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
             Picasso.with(context).load(file).fit().centerInside().into(holder.mPreview);
         }
 
+        holder.mPreview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.parse(holder.mItem.localURI), holder.mItem.fileType == FileType.PHOTO ? "image/*" : "video/*");
+                context.startActivity(intent);
+            }
+        });
         holder.mBtnMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

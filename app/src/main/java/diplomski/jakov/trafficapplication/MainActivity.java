@@ -13,6 +13,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 
 import diplomski.jakov.trafficapplication.base.Application;
@@ -30,12 +33,13 @@ public class MainActivity extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    getSupportFragmentManager().beginTransaction().replace(R.id.content,HomeFragment.newInstance()).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.content, HomeFragment.newInstance()).commit();
                     return true;
                 case R.id.navigation_files:
-                    getSupportFragmentManager().beginTransaction().replace(R.id.content,FileFragment.newInstance()).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.content, FileFragment.newInstance()).commit();
                     return true;
                 case R.id.navigation_settings:
+                    getSupportFragmentManager().beginTransaction().replace(R.id.content, SettingsFragment.newInstance()).commit();
                     return true;
             }
             return false;
@@ -47,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((Application) getApplication()).getNetComponent().inject(this);
-        if(!checkUser()){
-            Intent i = new Intent(this,LoginActivity.class);
+        if (!checkUser()) {
+            Intent i = new Intent(this, LoginActivity.class);
             startActivity(i);
             finish();
             return;
@@ -58,22 +62,28 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        getSupportFragmentManager().beginTransaction().add(R.id.content,HomeFragment.newInstance()).commit();
-
+        getSupportFragmentManager().beginTransaction().add(R.id.content, HomeFragment.newInstance()).commit();
+        ArrayList<String> permissions = new ArrayList<String>();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+            permissions.add(Manifest.permission.CAMERA);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+            permissions.add(Manifest.permission.RECORD_AUDIO);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SYSTEM_ALERT_WINDOW}, 1);
-            if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)){
+            permissions.add(Manifest.permission.SYSTEM_ALERT_WINDOW);
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
             }
+        }
+        if (permissions.size() > 0) {
+            ActivityCompat.requestPermissions(this, permissions.toArray(new String[0]), 1);
         }
     }
 

@@ -10,6 +10,7 @@ import diplomski.jakov.trafficapplication.HomeFragment;
 import diplomski.jakov.trafficapplication.LoginActivity;
 import diplomski.jakov.trafficapplication.MainActivity;
 import diplomski.jakov.trafficapplication.RegisterActivity;
+import diplomski.jakov.trafficapplication.SettingsFragment;
 import diplomski.jakov.trafficapplication.services.GPSService;
 import diplomski.jakov.trafficapplication.services.ProactiveService;
 
@@ -24,4 +25,5 @@ public interface NetComponent {
     void inject(ProactiveService proactiveService);
     void inject(GPSService gpsService);
     void inject(MainActivity activity);
+    void inject(SettingsFragment fragment);
 }
