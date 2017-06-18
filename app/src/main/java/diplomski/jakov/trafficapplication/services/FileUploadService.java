@@ -87,8 +87,8 @@ public class FileUploadService {
         model.fileUrl = localFile.linkToFile;
         model.isImage = localFile.fileType == FileType.PHOTO;
         model.userId = preferenceService.getUserId();
-        model.latitude = String.valueOf(localFile.latitude);
-        model.longitude = String.valueOf(localFile.longitude);
+        model.latitude = localFile.latitude;
+        model.longitude = localFile.longitude;
         model.dateCreated = localFile.dateCreated.getTime();
         dynamicResourceService.createFile(preferenceService.getAuthorization(), model).enqueue(new Callback<RegisterResponseModel>() {
             @Override

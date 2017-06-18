@@ -5,7 +5,7 @@ public class DynamicFileModel {
     public boolean isImage;
     public String userId;
     public String fileUrl;
-    public String latitude;
-    public String longitude;
+    public double latitude;
+    public double longitude;
     public long dateCreated;
 }

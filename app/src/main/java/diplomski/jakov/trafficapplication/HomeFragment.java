@@ -116,11 +116,8 @@ public class HomeFragment extends Fragment {
         if (takeVideoIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             LocalFileService.FileModel videoFile = localFileService.createVideoFile(RecordType.USER);
             if (videoFile != null && videoFile.file != null) {
-                Uri videoURI = FileProvider.getUriForFile(getActivity(),
-                        "diplomski.jakov.trafficapplication.fileprovider",
-                        videoFile.file);
-                takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoURI);
                 localFile = videoFile.localFile;
+                takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
                 startActivityForResult(takeVideoIntent, REQUEST_TAKE_VIDEO);
             }
         }
@@ -232,6 +229,11 @@ public class HomeFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_TAKE_VIDEO) && resultCode != RESULT_OK) {
             localFileDao.deleteLocalFile(localFile);
+        }
+        if (requestCode == REQUEST_TAKE_VIDEO && resultCode == RESULT_OK) {
+            LocalFile local = localFileDao.getLocalFile(localFile.id);
+            local.localURI = data.getData().getPath();
+            localFileDao.updateLocalFile(local);
         }
     }
 

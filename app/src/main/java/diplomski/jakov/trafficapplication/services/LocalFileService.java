@@ -106,7 +106,7 @@ public class LocalFileService {
     public FileModel createVideoFile(RecordType recordType) {
         // Create an image file name
         String timeStamp = DateFormats.TimeStamp.format(new Date());
-        String videoFileName = "MP4_" + timeStamp + "_";
+        String videoFileName = "MP4_" + timeStamp;
         File storageDir = mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File video = null;
         try {

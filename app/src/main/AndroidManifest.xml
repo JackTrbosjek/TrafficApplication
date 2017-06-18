@@ -5,17 +5,14 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
 
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="18" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="18" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
@@ -28,7 +25,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".LoginActivity"
-            android:label="@string/app_name"></activity>
+            android:label="@string/app_name" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".ActivateActivity">
             <intent-filter>
@@ -56,7 +53,6 @@
         <service android:name=".services.GPSService" />
         <service android:name=".services.ProactiveService" />
 
-
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="diplomski.jakov.trafficapplication.fileprovider"
@@ -66,19 +62,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-        <meta-data
-            android:name="DATABASE"
-            android:value="file.db" />
-        <meta-data
-            android:name="VERSION"
-            android:value="4" />
-        <meta-data
-            android:name="QUERY_LOG"
-            android:value="true" />
-        <meta-data
-            android:name="DOMAIN_PACKAGE_NAME"
-            android:value="diplomski.jakov.trafficapplication.models" />
 
     </application>
 
