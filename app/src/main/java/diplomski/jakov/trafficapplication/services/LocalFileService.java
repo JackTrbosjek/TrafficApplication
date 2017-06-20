@@ -135,8 +135,8 @@ public class LocalFileService {
     }
 
     private void startLocationService(long id) {
-        Intent i = new Intent(mContext, GPSService.class);
-        i.putExtra(GPSService.FILE_ID_ARG, id);
+        Intent i = new Intent(mContext, LocalFileGPSService.class);
+        i.putExtra(LocalFileGPSService.FILE_ID_ARG, id);
         mContext.startService(i);
     }
 

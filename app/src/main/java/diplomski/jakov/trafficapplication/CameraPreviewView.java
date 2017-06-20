@@ -35,13 +35,13 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
     LocalFileDao localFileDao;
     private int videoTimeInMills;
 
-    public CameraPreviewView(Context context, LocalFileDao localFileDao, LocalFileService localFileService, FileType fileType, VideoDurationUnits videoDurationUnits, int forInterval) {
+    public CameraPreviewView(Context context, LocalFileDao localFileDao, LocalFileService localFileService,RecordType recordType, FileType fileType, VideoDurationUnits videoDurationUnits, int forInterval) {
         mContext = context;
         mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         mWindowParams = createWindowParams(INITIAL_WIDTH, INITIAL_HEIGHT);
         this.localFileService = localFileService;
         this.localFileDao = localFileDao;
-        recordType = RecordType.PROACTIVE;
+        this.recordType = recordType;
         this.fileType = fileType;
 
         if (fileType == FileType.VIDEO) {

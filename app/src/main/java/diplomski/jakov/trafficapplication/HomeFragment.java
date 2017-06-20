@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -36,6 +37,7 @@ import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
 import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.services.LocalFileService;
 import diplomski.jakov.trafficapplication.services.ProactiveService;
+import diplomski.jakov.trafficapplication.services.ReactiveService;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -208,9 +210,17 @@ public class HomeFragment extends Fragment {
     //endregion
 
     //region Reactive Mode
+    @BindView(R.id.reactive_traffic_jam)
+    CheckBox reactiveTrafficJamCb;
+    @BindView(R.id.reactive_sudden_stopping)
+    CheckBox reactiveSuddenStoppingCb;
+
     @OnClick(R.id.start_reactive)
     public void startReactiveClick() {
-
+        Intent i = new Intent(getActivity(), ReactiveService.class);
+        i.putExtra(ReactiveService.ARG_TRAFFIC_JAM, reactiveTrafficJamCb.isChecked());
+        i.putExtra(ReactiveService.ARG_SUDDEN_STOPPING, reactiveSuddenStoppingCb.isChecked());
+        getActivity().startService(i);
     }
 
     @OnClick(R.id.reactive_mode_switch)

@@ -50,8 +50,11 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".services.GPSService" />
+        <service android:name=".services.LocalFileGPSService" />
         <service android:name=".services.ProactiveService" />
+        <service android:name=".services.ReactiveService" />
+        <service android:name=".services.TrafficJamGPSService" />
+        <service android:name=".services.SuddenStoppingDetectionService" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

@@ -25,7 +25,7 @@ import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.database.LocalFileDao;
 
-public class GPSService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+public class LocalFileGPSService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private static final String LOGSERVICE = "Location Service";
