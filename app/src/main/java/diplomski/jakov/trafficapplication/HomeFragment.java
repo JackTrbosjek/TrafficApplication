@@ -36,8 +36,10 @@ import diplomski.jakov.trafficapplication.models.Enums.TimeUnits;
 import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
 import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.services.LocalFileService;
+import diplomski.jakov.trafficapplication.services.PreferenceService;
 import diplomski.jakov.trafficapplication.services.ProactiveService;
 import diplomski.jakov.trafficapplication.services.ReactiveService;
+import diplomski.jakov.trafficapplication.services.TrafficJamGPSService;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -57,6 +59,10 @@ public class HomeFragment extends Fragment {
 
     @Inject
     LocalFileDao localFileDao;
+
+    @Inject
+    PreferenceService preferenceService;
+
 
     public HomeFragment() {
         // Required empty public constructor
@@ -83,8 +89,23 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         ButterKnife.bind(this, view);
         mainView = view;
-
+        setDefaultValues();
         return view;
+    }
+
+    private void setDefaultValues() {
+        FileType fileType = preferenceService.getProactiveType();
+        proactiveTypeSp.setSelection(fileType.ordinal());
+        if(fileType == FileType.VIDEO){
+            videoDurationLayout.setVisibility(View.VISIBLE);
+        }
+        intervalEt.setText(preferenceService.getProactiveInterval());
+        everyUnitsSp.setSelection(preferenceService.getProactiveEveryUnits().ordinal());
+        forDurationEt.setText(preferenceService.getProactiveForDuration());
+        forUnitsSp.setSelection(preferenceService.getProactiveForUnits().ordinal());
+        forDurationEt.setText(preferenceService.getProactiveForDuration());
+        reactiveSuddenStoppingCb.setChecked(preferenceService.getReactiveSuddenStopping());
+        reactiveTrafficJamCb.setChecked(preferenceService.getReactiveTrafficJam());
     }
 
     @Override
@@ -95,6 +116,18 @@ public class HomeFragment extends Fragment {
             proactiveLayout.setVisibility(View.VISIBLE);
             proactiveSwitch.setChecked(true);
             btnStartProactive.setText("Stop Service");
+        }else{
+            btnStartProactive.setText("Start Service");
+            proactiveOptionsLayout.setVisibility(View.VISIBLE);
+        }
+        if (isMyServiceRunning(ReactiveService.class)) {
+            reactiveOptionsLayout.setVisibility(View.GONE);
+            reactiveLayout.setVisibility(View.VISIBLE);
+            reactiveSwitch.setChecked(true);
+            startReactiveBtn.setText("Stop Service");
+        }else{
+            startReactiveBtn.setText("Start Service");
+            reactiveOptionsLayout.setVisibility(View.VISIBLE);
         }
     }
 
@@ -214,12 +247,36 @@ public class HomeFragment extends Fragment {
     CheckBox reactiveTrafficJamCb;
     @BindView(R.id.reactive_sudden_stopping)
     CheckBox reactiveSuddenStoppingCb;
+    @BindView(R.id.reactive_jam_duration)
+    EditText reactiveTrafficJamDurationEt;
+    @BindView(R.id.start_reactive)
+    Button startReactiveBtn;
+    @BindView(R.id.reactive_layout)
+    LinearLayout reactiveLayout;
+    @BindView(R.id.reactive_mode_switch)
+    Switch reactiveSwitch;
+    @BindView(R.id.reactive_options_layout)
+    LinearLayout reactiveOptionsLayout;
 
     @OnClick(R.id.start_reactive)
     public void startReactiveClick() {
+        if (isMyServiceRunning(ReactiveService.class)) {
+            Intent i = new Intent(getActivity(),ReactiveService.class);
+            getActivity().stopService(i);
+            startReactiveBtn.setText("Start Service");
+            reactiveOptionsLayout.setVisibility(View.VISIBLE);
+            return;
+        }
+        reactiveOptionsLayout.setVisibility(View.GONE);
+        startReactiveBtn.setText("Stop Service");
+
         Intent i = new Intent(getActivity(), ReactiveService.class);
         i.putExtra(ReactiveService.ARG_TRAFFIC_JAM, reactiveTrafficJamCb.isChecked());
         i.putExtra(ReactiveService.ARG_SUDDEN_STOPPING, reactiveSuddenStoppingCb.isChecked());
+        if (reactiveTrafficJamCb.isChecked()) {
+            long trafficJamDuration = reactiveTrafficJamDurationEt.getText().length() > 0 ? Long.parseLong(reactiveTrafficJamDurationEt.getText().toString()) * 1000 : 60 * 1000;
+            i.putExtra(TrafficJamGPSService.TRAFFIC_JAM_DURATION_ARG, trafficJamDuration);
+        }
         getActivity().startService(i);
     }
 
@@ -230,6 +287,15 @@ public class HomeFragment extends Fragment {
             layout.setVisibility(View.VISIBLE);
         } else {
             layout.setVisibility(View.GONE);
+        }
+    }
+
+    @OnClick(R.id.reactive_traffic_jam)
+    public void onTrafficJamClick(CheckBox checkBox){
+        if(checkBox.isChecked()){
+            reactiveTrafficJamDurationEt.setVisibility(View.VISIBLE);
+        }else {
+            reactiveTrafficJamDurationEt.setVisibility(View.GONE);
         }
     }
     //endregion

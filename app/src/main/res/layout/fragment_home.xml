@@ -196,6 +196,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Record Traffic Jam" />
+
+                <EditText
+                    android:id="@+id/reactive_jam_duration"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:ems="10"
+                    android:hint="Enter Traffic Jam Duration (sec)"
+                    android:inputType="number"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <Button

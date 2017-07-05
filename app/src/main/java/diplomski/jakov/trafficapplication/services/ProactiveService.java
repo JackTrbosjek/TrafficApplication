@@ -107,12 +107,12 @@ public class ProactiveService extends Service {
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_notification_icon)
                         .setContentTitle("Traffic Application")
-                        .setContentText("Reactive Service");
+                        .setContentText("Proactive Service");
 
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(this, MainActivity.class);
 
-        Intent stopIntent = new Intent(this, ReactiveService.class);
+        Intent stopIntent = new Intent(this, ProactiveService.class);
         stopIntent.setAction(STOP_INTENT);
         PendingIntent stopPeIntent = PendingIntent.getService(this, 2, stopIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         mBuilder.addAction(R.drawable.ic_notification_stop, "Stop Service", stopPeIntent);

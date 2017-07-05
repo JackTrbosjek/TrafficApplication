@@ -33,8 +33,8 @@ import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 public class TrafficJamGPSService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
     public static final String TRAFFIC_JAM_DURATION_ARG = TrafficJamGPSService.class.getName() + "ARG_TRAFFIC_JAM";
     private static final String LOGSERVICE = TrafficJamGPSService.class.getName();
-    private static final int INTERVAL = 15 * 1000;
-    private static final int FASTEST_INTERVAL = 10 * 1000;
+    private static final int INTERVAL = 7 * 1000;
+    private static final int FASTEST_INTERVAL = 5 * 1000;
     private static final long STARING_DELAY = 40 * 1000;
 
     private LocationRequest mLocationRequest;

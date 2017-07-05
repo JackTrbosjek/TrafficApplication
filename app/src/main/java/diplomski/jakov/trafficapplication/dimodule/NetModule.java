@@ -2,6 +2,7 @@ package diplomski.jakov.trafficapplication.dimodule;
 
 import android.arch.persistence.room.Room;
 import android.content.SharedPreferences;
+import android.icu.util.TimeUnit;
 import android.preference.PreferenceManager;
 
 import com.google.gson.FieldNamingPolicy;
@@ -63,7 +64,10 @@ public class NetModule {
     @Provides
     @Singleton
     OkHttpClient provideOkHttpClient(Cache cache) {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                .build();
         return client;
     }
 

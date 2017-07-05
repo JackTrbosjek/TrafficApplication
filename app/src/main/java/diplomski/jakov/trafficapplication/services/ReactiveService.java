@@ -34,8 +34,6 @@ public class ReactiveService extends Service {
     Intent suddenStoppingIntent;
     boolean recordTrafficJam;
     Intent trafficJamIntent;
-    Handler handler;
-    Runnable handlerRunnable;
     int mNotificationId;
     NotificationManager mNotificationManager;
 
@@ -56,7 +54,7 @@ public class ReactiveService extends Service {
 
         if (recordTrafficJam) {
             trafficJamIntent = new Intent(this, TrafficJamGPSService.class);
-            long jamDuration = 2 * 60 * 1000; //2 minutes
+            long jamDuration = intent.getLongExtra(TrafficJamGPSService.TRAFFIC_JAM_DURATION_ARG, 0);
             trafficJamIntent.putExtra(TrafficJamGPSService.TRAFFIC_JAM_DURATION_ARG, jamDuration);
             startService(trafficJamIntent);
         }
