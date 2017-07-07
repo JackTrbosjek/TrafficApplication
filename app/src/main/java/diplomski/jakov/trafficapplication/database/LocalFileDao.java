@@ -24,4 +24,7 @@ public interface LocalFileDao {
 
     @Query("SELECT * FROM localFile ORDER BY dateCreated DESC")
     List<LocalFile> getAllLocalFiles();
+
+    @Query("SELECT * FROM localFile WHERE sync=0 ORDER BY dateCreated DESC")
+    List<LocalFile> getAllUnsyncedLocalFiles();
 }

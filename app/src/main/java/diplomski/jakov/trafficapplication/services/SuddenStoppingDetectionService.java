@@ -10,7 +10,6 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.FloatMath;
 
 import javax.inject.Inject;
 
@@ -26,6 +25,7 @@ public class SuddenStoppingDetectionService extends Service implements SensorEve
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
     private boolean takingPicture = false;
+    @Inject
     CameraPreviewView cameraPreviewView;
 
     @Inject
@@ -45,7 +45,6 @@ public class SuddenStoppingDetectionService extends Service implements SensorEve
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        cameraPreviewView = new CameraPreviewView(getApplicationContext(), localFileDao, localFileService, RecordType.REACTIVE, FileType.PHOTO, null, 0);
         return START_STICKY;
     }
 
@@ -66,7 +65,7 @@ public class SuddenStoppingDetectionService extends Service implements SensorEve
     }
 
     private void takePicture() {
-        cameraPreviewView.show();
+        cameraPreviewView.takeRecord(RecordType.REACTIVE, FileType.PHOTO, null, 0);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

@@ -60,7 +60,6 @@ public class FileFragment extends Fragment implements MyFileRecyclerViewAdapter.
 
     @Override
     public void onSyncClick(LocalFile item) {
-        fileUploadService.uploadFile(item,getActivity());
     }
 
     @Override

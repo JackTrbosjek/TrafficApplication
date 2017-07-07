@@ -14,6 +14,7 @@ import diplomski.jakov.trafficapplication.services.LocalFileGPSService;
 import diplomski.jakov.trafficapplication.services.ProactiveService;
 import diplomski.jakov.trafficapplication.services.ReactiveService;
 import diplomski.jakov.trafficapplication.services.SuddenStoppingDetectionService;
+import diplomski.jakov.trafficapplication.services.SyncService;
 import diplomski.jakov.trafficapplication.services.TrafficJamGPSService;
 
 @Singleton
@@ -31,4 +32,5 @@ public interface NetComponent {
     void inject(LocalFileGPSService localFileGpsService);
     void inject(MainActivity activity);
     void inject(SettingsFragment fragment);
+    void inject(SyncService syncService);
 }

@@ -12,9 +12,6 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 
-import javax.inject.Inject;
-
-import diplomski.jakov.trafficapplication.LoginActivity;
 import diplomski.jakov.trafficapplication.R;
 import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
@@ -23,6 +20,7 @@ import diplomski.jakov.trafficapplication.rest.models.FileUploadResponse;
 import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.rest.models.LoginModel;
 import diplomski.jakov.trafficapplication.rest.models.RegisterResponseModel;
+import diplomski.jakov.trafficapplication.rest.models.UserInfoResponse;
 import diplomski.jakov.trafficapplication.rest.services.AuthenticationService;
 import diplomski.jakov.trafficapplication.rest.services.DynamicResourceService;
 import diplomski.jakov.trafficapplication.rest.services.FileService;
@@ -31,7 +29,6 @@ import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.http.HTTP;
 
 public class FileUploadService {
     private FileService fileService;
@@ -40,6 +37,7 @@ public class FileUploadService {
     private LocalFileDao localFileDao;
     private AuthenticationService authenticationService;
     private DynamicResourceService dynamicResourceService;
+
 
     public FileUploadService(FileService fileService, Context context, PreferenceService preferenceService, LocalFileDao localFileDao, AuthenticationService authenticationService, DynamicResourceService dynamicResourceService) {
         this.fileService = fileService;
@@ -50,7 +48,7 @@ public class FileUploadService {
         this.dynamicResourceService = dynamicResourceService;
     }
 
-    public void uploadFile(final LocalFile localFile, final Activity dialogContext) {
+    public void uploadFile(final LocalFile localFile, final OnFileUploadListener listener) {
         File file = new File(localFile.localURI);
         RequestBody fbody = RequestBody.create(MediaType.parse("image/jpeg"), file);
         fileService.uploadFile(preferenceService.getAuthorization(),
@@ -60,16 +58,18 @@ public class FileUploadService {
                 if (response.isSuccessful()) {
                     localFile.sync = true;
                     localFile.linkToFile = "https://api.baasic.com/v1/traffic-application/file-streams/" + response.body().id;
-                    uploadDynamicResource(localFile);
+                    uploadDynamicResource(localFile, listener);
 
                 } else {
                     if (response.code() == 401) {
-                        showLoginDialog(dialogContext);
-                    }
-                    try {
-                        Toast.makeText(context, response.errorBody().string(), Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        listener.unauthorized();
+                    } else {
+                        try {
+                            Toast.makeText(context, response.errorBody().string(), Toast.LENGTH_LONG).show();
+                            listener.onError();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -77,11 +77,12 @@ public class FileUploadService {
             @Override
             public void onFailure(Call<FileUploadResponse> call, Throwable t) {
                 Toast.makeText(context, t.getMessage(), Toast.LENGTH_LONG).show();
+                listener.onError();
             }
         });
     }
 
-    private void uploadDynamicResource(final LocalFile localFile) {
+    private void uploadDynamicResource(final LocalFile localFile, final OnFileUploadListener listener) {
         DynamicFileModel model = new DynamicFileModel();
         model.id = "";
         model.fileUrl = localFile.linkToFile;
@@ -94,11 +95,12 @@ public class FileUploadService {
             @Override
             public void onResponse(Call<RegisterResponseModel> call, Response<RegisterResponseModel> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show();
                     localFileDao.updateLocalFile(localFile);
+                    listener.onSuccess();
                 } else {
                     try {
                         Toast.makeText(context, response.errorBody().string(), Toast.LENGTH_LONG).show();
+                        listener.onError();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -108,12 +110,42 @@ public class FileUploadService {
             @Override
             public void onFailure(Call<RegisterResponseModel> call, Throwable t) {
                 Toast.makeText(context, t.getMessage(), Toast.LENGTH_LONG).show();
+                listener.onError();
             }
         });
 
     }
 
-    private void showLoginDialog(Activity dialogContext) {
+    public void checkLogin(final Activity dialogContext, final OnCheckLogin onCheckLogin) {
+
+        authenticationService.userInfo(preferenceService.getAuthorization()).enqueue(new Callback<UserInfoResponse>() {
+            @Override
+            public void onResponse(Call<UserInfoResponse> call, Response<UserInfoResponse> response) {
+                if (response.isSuccessful()) {
+                    onCheckLogin.loginOK();
+                } else {
+                    if (response.code() == 401) {
+                        showLoginDialog(dialogContext, onCheckLogin);
+                    } else {
+                        try {
+                            Toast.makeText(context, response.errorBody().string(), Toast.LENGTH_LONG).show();
+                            onCheckLogin.invalidLogin();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserInfoResponse> call, Throwable t) {
+                Toast.makeText(context, t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+
+    private void showLoginDialog(Activity dialogContext, final OnCheckLogin onCheckLogin) {
         LayoutInflater li = (LayoutInflater) dialogContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View promptsView = li.inflate(R.layout.login_dialog, null);
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
@@ -130,7 +162,7 @@ public class FileUploadService {
         alertDialogBuilder.setPositiveButton("Login", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                login(emailEt.getText().toString(), passwordEt.getText().toString(), dialogInterface);
+                login(emailEt.getText().toString(), passwordEt.getText().toString(), dialogInterface, onCheckLogin);
             }
         });
         alertDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -143,15 +175,17 @@ public class FileUploadService {
         alertDialogBuilder.create().show();
     }
 
-    private void login(String email, String password, final DialogInterface dialogInterface) {
+    private void login(String email, String password, final DialogInterface dialogInterface, final OnCheckLogin onCheckLogin) {
         authenticationService.login(email, password, "password").enqueue(new Callback<LoginModel>() {
             @Override
             public void onResponse(Call<LoginModel> call, Response<LoginModel> response) {
                 if (response.isSuccessful()) {
                     preferenceService.saveToken(response.body().accessToken);
                     dialogInterface.dismiss();
+                    onCheckLogin.loginOK();
                     Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show();
                 } else {
+                    onCheckLogin.invalidLogin();
                     try {
                         Toast.makeText(context, response.errorBody().string(), Toast.LENGTH_LONG).show();
                     } catch (IOException e) {
@@ -165,6 +199,19 @@ public class FileUploadService {
                 Toast.makeText(context, t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    public interface OnCheckLogin{
+        void loginOK();
+        void invalidLogin();
+    }
+
+    public interface OnFileUploadListener {
+        void onSuccess();
+
+        void unauthorized();
+
+        void onError();
     }
 
 }

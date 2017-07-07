@@ -35,12 +35,16 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
     LocalFileDao localFileDao;
     private int videoTimeInMills;
 
-    public CameraPreviewView(Context context, LocalFileDao localFileDao, LocalFileService localFileService,RecordType recordType, FileType fileType, VideoDurationUnits videoDurationUnits, int forInterval) {
+    public CameraPreviewView(Context context, LocalFileDao localFileDao, LocalFileService localFileService) {
         mContext = context;
         mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         mWindowParams = createWindowParams(INITIAL_WIDTH, INITIAL_HEIGHT);
         this.localFileService = localFileService;
         this.localFileDao = localFileDao;
+
+    }
+
+    public boolean takeRecord(RecordType recordType, FileType fileType, VideoDurationUnits videoDurationUnits, int forInterval) {
         this.recordType = recordType;
         this.fileType = fileType;
 
@@ -58,15 +62,19 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
                     break;
             }
         }
-    }
-
-    public void show() {
         if (recordType != null && fileType != null) {
             mMediaRecorder = new MediaRecorder();
             mCamera = getCameraInstance();
-            mPreview = new CameraPreview(mContext, mCamera, mMediaRecorder, this);
+            if (mCamera != null) {
+                mPreview = new CameraPreview(mContext, mCamera, mMediaRecorder, this);
+            }else{
+                return false;
+            }
+        }else{
+            return false;
         }
         mWindowManager.addView(mPreview, mWindowParams);
+        return true;
     }
 
     public void hide() {
@@ -166,7 +174,7 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
     public Camera getCameraInstance() {
         Camera c = null;
         try {
-            c = Camera.open(); // attempt to get a Camera instance
+            c = Camera.open(0); // attempt to get a Camera instance
         } catch (Exception e) {
             // Camera is not available (in use or does not exist)
         }

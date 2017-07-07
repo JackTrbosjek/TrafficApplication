@@ -19,12 +19,17 @@ import java.util.List;
 import javax.inject.Inject;
 
 import diplomski.jakov.trafficapplication.base.Application;
+import diplomski.jakov.trafficapplication.services.FileUploadService;
 import diplomski.jakov.trafficapplication.services.PreferenceService;
+import diplomski.jakov.trafficapplication.services.SyncService;
 
 public class MainActivity extends AppCompatActivity {
 
     @Inject
     PreferenceService preferenceService;
+
+    @Inject
+    FileUploadService fileUploadService;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -70,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             permissions.add(Manifest.permission.CAMERA);
         }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             permissions.add(Manifest.permission.RECORD_AUDIO);
         }
@@ -84,7 +92,29 @@ public class MainActivity extends AppCompatActivity {
         }
         if (permissions.size() > 0) {
             ActivityCompat.requestPermissions(this, permissions.toArray(new String[0]), 1);
+        } else {
+            checkAuthorizationAndStartSync();
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        checkAuthorizationAndStartSync();
+    }
+
+    private void checkAuthorizationAndStartSync() {
+        fileUploadService.checkLogin(this, new FileUploadService.OnCheckLogin() {
+            @Override
+            public void loginOK() {
+                Intent i = new Intent(MainActivity.this, SyncService.class);
+                startService(i);
+            }
+
+            @Override
+            public void invalidLogin() {
+
+            }
+        });
     }
 
     private boolean checkUser() {

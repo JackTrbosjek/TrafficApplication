@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
-import java.util.Objects;
 import java.util.Random;
 
 import javax.inject.Inject;
@@ -37,11 +36,14 @@ public class ProactiveService extends Service {
     TimeUnits timeUnits;
     int forInterval;
     VideoDurationUnits videoDurationUnits;
-    CameraPreviewView cameraPreviewView;
+
     Handler handler;
     Runnable handlerRunnable;
     int mNotificationId;
     NotificationManager mNotificationManager;
+
+    @Inject
+    CameraPreviewView cameraPreviewView;
 
     @Inject
     LocalFileDao localFileDao;
@@ -66,8 +68,6 @@ public class ProactiveService extends Service {
         videoDurationUnits = VideoDurationUnits.detachFrom(intent);
         interval = intent.getIntExtra(ARG_INTERVAL, -1);
         forInterval = intent.getIntExtra(ARG_FOR_INTERVAL, -1);
-
-        cameraPreviewView = new CameraPreviewView(getApplicationContext(), localFileDao, localFileService, RecordType.PROACTIVE, fileType, videoDurationUnits, forInterval);
 
         createNotification();
 
@@ -94,7 +94,7 @@ public class ProactiveService extends Service {
         handlerRunnable = new Runnable() {
             @Override
             public void run() {
-                cameraPreviewView.show();
+                cameraPreviewView.takeRecord(RecordType.PROACTIVE, fileType, videoDurationUnits, forInterval);
                 handler.postDelayed(this, finalIntervalInMills);
             }
         };

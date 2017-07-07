@@ -16,7 +16,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,7 +24,6 @@ import javax.inject.Inject;
 
 import diplomski.jakov.trafficapplication.CameraPreviewView;
 import diplomski.jakov.trafficapplication.base.Application;
-import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
@@ -42,6 +40,7 @@ public class TrafficJamGPSService extends Service implements GoogleApiClient.Con
     private LinkedList<Location> listOfLocations;
     private long trafficJamDuration;
     private long startingTime;
+    @Inject
     CameraPreviewView cameraPreviewView;
 
     @Inject
@@ -71,7 +70,6 @@ public class TrafficJamGPSService extends Service implements GoogleApiClient.Con
             else
                 startLocationUpdate();
         }
-        cameraPreviewView = new CameraPreviewView(getApplicationContext(), localFileDao, localFileService, RecordType.REACTIVE, FileType.PHOTO, null, 0);
         return START_STICKY;
     }
 
@@ -127,7 +125,7 @@ public class TrafficJamGPSService extends Service implements GoogleApiClient.Con
     }
 
     private void reportTrafficJam() {
-        cameraPreviewView.show();
+        cameraPreviewView.takeRecord( RecordType.REACTIVE, FileType.PHOTO, null, 0);
     }
 
 

@@ -38,5 +38,21 @@ public class LocalFile {
 
     public LocalFile() {
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LocalFile localFile = (LocalFile) o;
+
+        return id == localFile.id;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
+    }
 }
 

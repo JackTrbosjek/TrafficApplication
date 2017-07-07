@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import diplomski.jakov.trafficapplication.CameraPreviewView;
 import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.database.AppDatabase;
 import diplomski.jakov.trafficapplication.database.LocalFileDao;
@@ -65,8 +66,8 @@ public class NetModule {
     @Singleton
     OkHttpClient provideOkHttpClient(Cache cache) {
         OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-                .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+                .connectTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
                 .build();
         return client;
     }
@@ -129,5 +130,11 @@ public class NetModule {
     LocalFileService providesLocalFileService(Application application, LocalFileDao localFileDao) {
 
         return new LocalFileService(application, localFileDao);
+    }
+
+    @Provides
+    @Singleton
+    CameraPreviewView providesCameraPreviewView(Application application, LocalFileDao localFileDao, LocalFileService localFileService) {
+        return new CameraPreviewView(application,localFileDao,localFileService);
     }
 }
