@@ -40,6 +40,8 @@ import diplomski.jakov.trafficapplication.services.PreferenceService;
 import diplomski.jakov.trafficapplication.services.ProactiveService;
 import diplomski.jakov.trafficapplication.services.ReactiveService;
 import diplomski.jakov.trafficapplication.services.TrafficJamGPSService;
+import diplomski.jakov.trafficapplication.services.UserService;
+import diplomski.jakov.trafficapplication.util.Util;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -62,6 +64,9 @@ public class HomeFragment extends Fragment {
 
     @Inject
     PreferenceService preferenceService;
+
+    @Inject
+    UserService userService;
 
 
     public HomeFragment() {
@@ -111,7 +116,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (isMyServiceRunning(ProactiveService.class)) {
+        if (Util.isMyServiceRunning(ProactiveService.class, getActivity())) {
             proactiveOptionsLayout.setVisibility(View.GONE);
             proactiveLayout.setVisibility(View.VISIBLE);
             proactiveSwitch.setChecked(true);
@@ -120,7 +125,7 @@ public class HomeFragment extends Fragment {
             btnStartProactive.setText("Start Service");
             proactiveOptionsLayout.setVisibility(View.VISIBLE);
         }
-        if (isMyServiceRunning(ReactiveService.class)) {
+        if (Util.isMyServiceRunning(ReactiveService.class, getActivity())) {
             reactiveOptionsLayout.setVisibility(View.GONE);
             reactiveLayout.setVisibility(View.VISIBLE);
             reactiveSwitch.setChecked(true);
@@ -215,8 +220,8 @@ public class HomeFragment extends Fragment {
 
     @OnClick(R.id.start_proactive)
     public void startProactiveClick() {
-        hideKeyboard();
-        if (isMyServiceRunning(ProactiveService.class)) {
+        Util.hideKeyboard(getActivity());
+        if (Util.isMyServiceRunning(ProactiveService.class, getActivity())) {
             Intent i = new Intent(getActivity(), ProactiveService.class);
             getActivity().stopService(i);
             btnStartProactive.setText("Start Service");
@@ -239,6 +244,7 @@ public class HomeFragment extends Fragment {
         videoDurationUnits.attachTo(i);
         getActivity().startService(i);
         btnStartProactive.setText("Stop Service");
+        userService.checkAuthorizationAndStartSync(getActivity());
     }
     //endregion
 
@@ -260,7 +266,7 @@ public class HomeFragment extends Fragment {
 
     @OnClick(R.id.start_reactive)
     public void startReactiveClick() {
-        if (isMyServiceRunning(ReactiveService.class)) {
+        if (Util.isMyServiceRunning(ReactiveService.class, getActivity())) {
             Intent i = new Intent(getActivity(),ReactiveService.class);
             getActivity().stopService(i);
             startReactiveBtn.setText("Start Service");
@@ -278,6 +284,7 @@ public class HomeFragment extends Fragment {
             i.putExtra(TrafficJamGPSService.TRAFFIC_JAM_DURATION_ARG, trafficJamDuration);
         }
         getActivity().startService(i);
+        userService.checkAuthorizationAndStartSync(getActivity());
     }
 
     @OnClick(R.id.reactive_mode_switch)
@@ -313,20 +320,5 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-    private void hideKeyboard() {
-        InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        inputManager.hideSoftInputFromWindow((null == getActivity().getCurrentFocus()) ? null : getActivity().getCurrentFocus().getWindowToken(),
-                InputMethodManager.HIDE_NOT_ALWAYS);
-    }
 }

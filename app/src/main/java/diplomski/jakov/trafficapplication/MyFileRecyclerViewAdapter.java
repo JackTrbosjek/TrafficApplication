@@ -2,7 +2,9 @@ package diplomski.jakov.trafficapplication;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -12,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +22,7 @@ import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import diplomski.jakov.trafficapplication.services.SyncService;
 import diplomski.jakov.trafficapplication.util.DateFormats;
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.database.LocalFile;
@@ -26,7 +30,7 @@ import diplomski.jakov.trafficapplication.database.LocalFile;
 import java.io.File;
 import java.util.List;
 
-public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecyclerViewAdapter.ViewHolder> {
+public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecyclerViewAdapter.ViewHolder> implements SyncService.OnFileSyncListener {
 
     private List<LocalFile> mValues;
     private final OnItemInteractionListener mListener;
@@ -40,6 +44,26 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
 
     public void setItems(List<LocalFile> items) {
         mValues = items;
+        notifyDataSetChanged();
+    }
+
+    public void updateItemsInSync(List<LocalFile> syncingItems){
+        for (LocalFile file : mValues) {
+            if(syncingItems.contains(file)){
+                file.syncInProgress = true;
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void newFileSynced(LocalFile localFile) {
+        for (LocalFile file : mValues){
+            if(file.equals(localFile)){
+                file.syncInProgress = false;
+                file.sync = true;
+            }
+        }
         notifyDataSetChanged();
     }
 
@@ -68,8 +92,9 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
         File file = new File(holder.mItem.localURI);
         if (holder.mItem.fileType == FileType.PHOTO) {
             Picasso.with(context).load(file).fit().centerInside().into(holder.mPreview);
+        }else{
+            Picasso.with(context).load(android.R.drawable.presence_video_online).fit().centerInside().into(holder.mPreview);
         }
-
         holder.mPreview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -79,12 +104,26 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
                 context.startActivity(intent);
             }
         });
+
+        if(holder.mItem.syncInProgress){
+            holder.progressBar.setVisibility(View.VISIBLE);
+        }else {
+            holder.progressBar.setVisibility(View.INVISIBLE);
+        }
+
+        if(holder.mItem.sync){
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#15c605"));
+        }else{
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#5e9bff"));
+        }
+
+
         holder.mBtnMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 PopupMenu popupMenu = new PopupMenu(context, holder.mBtnMore, Gravity.START);
                 popupMenu.getMenuInflater().inflate(R.menu.item_more_popup, popupMenu.getMenu());
-                if (holder.mItem.sync) {
+                if (holder.mItem.sync || holder.mItem.syncInProgress) {
                     popupMenu.getMenu().removeItem(R.id.sync_now);
                 }
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -92,6 +131,8 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.sync_now:
+                                holder.mItem.syncInProgress = true;
+                                notifyDataSetChanged();
                                 mListener.onSyncClick(holder.mItem);
                                 break;
                             case R.id.delete_local:
@@ -115,6 +156,8 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
         return mValues.size();
     }
 
+
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         @BindView(R.id.item_date_created)
@@ -129,6 +172,10 @@ public class MyFileRecyclerViewAdapter extends RecyclerView.Adapter<MyFileRecycl
         public ImageView mPreview;
         @BindView(R.id.item_button_more)
         public ImageButton mBtnMore;
+        @BindView(R.id.card_view)
+        public CardView cardView;
+        @BindView(R.id.sync_progress)
+        public ProgressBar progressBar;
 
         public LocalFile mItem;
 

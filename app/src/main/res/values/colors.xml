@@ -3,4 +3,6 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="cardBackground">#5e9bff</color>
+    <color name="cardBackgroundSynced">#15c605</color>
 </resources>

@@ -2,6 +2,8 @@ package diplomski.jakov.trafficapplication.services;
 
 import android.content.SharedPreferences;
 
+import java.util.Date;
+
 import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 import diplomski.jakov.trafficapplication.models.Enums.TimeUnits;
@@ -9,6 +11,7 @@ import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
 
 public class PreferenceService {
     private static final String TOKEN_KEY = "diplomski.jakov.trafficapplication.tokenkey";
+    private static final String TOKEN_EXPIRATION_KEY = "diplomski.jakov.trafficapplication.tokenkeyexpiration";
     private static final String USERNAME_KEY = "diplomski.jakov.trafficapplication.usernamekey";
     private static final String USER_ID_KEY = "diplomski.jakov.trafficapplication.userid";
     private static final String SYNC_REACTIVE_KEY = "diplomski.jakov.trafficapplication.syncreactive";
@@ -37,6 +40,20 @@ public class PreferenceService {
     public String getToken() {
         return preferences.getString(TOKEN_KEY, "");
     }
+
+    public void saveTokenExpiration(long expiresIn) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong(TOKEN_EXPIRATION_KEY, expiresIn + new Date().getTime());
+        editor.commit();
+    }
+
+    public boolean tokenExpired(){
+        long expires = preferences.getLong(TOKEN_EXPIRATION_KEY, 0);
+        long now = new Date().getTime();
+        return now > expires;
+    }
+
+
 
     public String getAuthorization() {
         return "Bearer " + preferences.getString(TOKEN_KEY, "");

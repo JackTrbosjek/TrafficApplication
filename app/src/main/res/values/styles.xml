@@ -15,7 +15,7 @@
         <item name="contentPaddingTop">24dp</item>
         <item name="contentPaddingLeft">16dp</item>
         <item name="contentPaddingRight">16dp</item>
-        <item name="cardBackgroundColor">#5e9bff</item>
+        <item name="cardBackgroundColor">@color/cardBackground</item>
     </style>
 
     <style name="MyFloatingWindow" parent="Theme.AppCompat.Dialog">

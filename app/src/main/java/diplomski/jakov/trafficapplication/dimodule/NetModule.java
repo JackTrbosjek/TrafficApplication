@@ -23,6 +23,7 @@ import diplomski.jakov.trafficapplication.rest.services.FileService;
 import diplomski.jakov.trafficapplication.services.FileUploadService;
 import diplomski.jakov.trafficapplication.services.LocalFileService;
 import diplomski.jakov.trafficapplication.services.PreferenceService;
+import diplomski.jakov.trafficapplication.services.UserService;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -134,7 +135,13 @@ public class NetModule {
 
     @Provides
     @Singleton
-    CameraPreviewView providesCameraPreviewView(Application application, LocalFileDao localFileDao, LocalFileService localFileService) {
-        return new CameraPreviewView(application,localFileDao,localFileService);
+    CameraPreviewView providesCameraPreviewView(Application application, LocalFileDao localFileDao, LocalFileService localFileService, UserService userService) {
+        return new CameraPreviewView(application, localFileDao, localFileService, userService);
+    }
+
+    @Provides
+    @Singleton
+    UserService providesUserService(Application application, FileUploadService fileUploadService, PreferenceService preferenceService, AuthenticationService authenticationService) {
+        return new UserService(fileUploadService, preferenceService, authenticationService, application);
     }
 }

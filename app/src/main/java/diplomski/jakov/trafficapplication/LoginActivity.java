@@ -51,6 +51,7 @@ public class LoginActivity extends BaseActivity {
             public void onResponse(Call<LoginModel> call, Response<LoginModel> response) {
                 if (response.isSuccessful()) {
                     preferenceService.saveToken(response.body().accessToken);
+                    preferenceService.saveTokenExpiration(response.body().expiresIn);
                     getUserInfo(response.body().accessToken);
                 } else {
                     hideProgress();

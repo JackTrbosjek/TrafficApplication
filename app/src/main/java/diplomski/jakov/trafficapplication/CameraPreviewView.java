@@ -19,6 +19,7 @@ import diplomski.jakov.trafficapplication.models.Enums.FileType;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 import diplomski.jakov.trafficapplication.models.Enums.VideoDurationUnits;
 import diplomski.jakov.trafficapplication.services.LocalFileService;
+import diplomski.jakov.trafficapplication.services.UserService;
 import diplomski.jakov.trafficapplication.util.CameraPreview;
 
 public class CameraPreviewView implements CameraPreview.SurfaceCallback {
@@ -33,14 +34,16 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
     private FileType fileType;
     LocalFileService localFileService;
     LocalFileDao localFileDao;
+    private UserService userService;
     private int videoTimeInMills;
 
-    public CameraPreviewView(Context context, LocalFileDao localFileDao, LocalFileService localFileService) {
+    public CameraPreviewView(Context context, LocalFileDao localFileDao, LocalFileService localFileService, UserService userService) {
         mContext = context;
         mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         mWindowParams = createWindowParams(INITIAL_WIDTH, INITIAL_HEIGHT);
         this.localFileService = localFileService;
         this.localFileDao = localFileDao;
+        this.userService = userService;
 
     }
 
@@ -81,6 +84,7 @@ public class CameraPreviewView implements CameraPreview.SurfaceCallback {
         releaseCamera();
         releaseMediaRecorder();
         mWindowManager.removeView(mPreview);
+        userService.checkAuthorizationAndStartSync();
     }
 
     private static WindowManager.LayoutParams createWindowParams(int width, int height) {

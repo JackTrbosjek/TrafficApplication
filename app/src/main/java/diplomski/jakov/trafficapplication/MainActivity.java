@@ -22,6 +22,9 @@ import diplomski.jakov.trafficapplication.base.Application;
 import diplomski.jakov.trafficapplication.services.FileUploadService;
 import diplomski.jakov.trafficapplication.services.PreferenceService;
 import diplomski.jakov.trafficapplication.services.SyncService;
+import diplomski.jakov.trafficapplication.services.UserService;
+import diplomski.jakov.trafficapplication.util.Connection;
+import diplomski.jakov.trafficapplication.util.Util;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Inject
     FileUploadService fileUploadService;
+
+    @Inject
+    UserService userService;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -102,20 +108,16 @@ public class MainActivity extends AppCompatActivity {
         checkAuthorizationAndStartSync();
     }
 
-    private void checkAuthorizationAndStartSync() {
-        fileUploadService.checkLogin(this, new FileUploadService.OnCheckLogin() {
-            @Override
-            public void loginOK() {
-                Intent i = new Intent(MainActivity.this, SyncService.class);
-                startService(i);
-            }
-
-            @Override
-            public void invalidLogin() {
-
-            }
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkAuthorizationAndStartSync();
     }
+
+    private void checkAuthorizationAndStartSync() {
+        userService.checkAuthorizationAndStartSync(this);
+    }
+
 
     private boolean checkUser() {
         return !preferenceService.getUsername().contentEquals("");

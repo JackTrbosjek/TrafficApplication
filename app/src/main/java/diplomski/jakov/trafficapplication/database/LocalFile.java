@@ -2,6 +2,7 @@ package diplomski.jakov.trafficapplication.database;
 
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 
 import java.util.Date;
@@ -35,6 +36,9 @@ public class LocalFile {
     public boolean sync;
 
     public RecordType recordType;
+
+    @Ignore
+    public boolean syncInProgress;
 
     public LocalFile() {
     }

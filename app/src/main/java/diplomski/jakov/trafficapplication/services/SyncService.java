@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -25,13 +27,19 @@ import diplomski.jakov.trafficapplication.database.LocalFile;
 import diplomski.jakov.trafficapplication.database.LocalFileDao;
 import diplomski.jakov.trafficapplication.models.Enums.RecordType;
 import diplomski.jakov.trafficapplication.util.Connection;
+import diplomski.jakov.trafficapplication.util.Util;
 
 public class SyncService extends Service {
     public static final String ARG_FILE_ID = "SyncService.class.argument_sudden_stopping";
     public static final String STOP_INTENT = SyncService.class.getName() + "STOP_INTENT";
+    public static final String RECURRING_INTENT = SyncService.class.getName() + "RECURRING_INTENT";
 
+    boolean syncInProgress = false;
+    boolean autosync;
     int mNotificationId;
     NotificationManager mNotificationManager;
+    Handler handler;
+    Runnable handlerRunnable;
     @Inject
     LocalFileDao localFileDao;
     @Inject
@@ -46,14 +54,25 @@ public class SyncService extends Service {
     public void onCreate() {
         super.onCreate();
         ((Application) getApplication()).getNetComponent().inject(this);
-        if (!Connection.isInternetConnected(getApplicationContext())) {
+        if (!connectionAvailable()) {
             stopSelf();
             return;
+        }
+        refreshFiles();
+
+    }
+
+    private boolean connectionAvailable() {
+        if (!Connection.isInternetConnected(getApplicationContext())) {
+            return false;
         }
         if (preferenceService.getSyncWifiOnly() && !Connection.isWiFiConnection(getApplicationContext())) {
-            stopSelf();
-            return;
+            return false;
         }
+        return true;
+    }
+
+    private void refreshFiles() {
         List<LocalFile> allLocalFiles = localFileDao.getAllUnsyncedLocalFiles();
         if (!preferenceService.getSyncProactive()) {
             removeTypeFromList(allLocalFiles, RecordType.PROACTIVE);
@@ -69,7 +88,6 @@ public class SyncService extends Service {
         for (LocalFile file : allLocalFiles) {
             filesForSync.push(file);
         }
-
     }
 
     private void removeTypeFromList(List<LocalFile> allFiles, RecordType recordType) {
@@ -94,47 +112,93 @@ public class SyncService extends Service {
             if (!filesForSync.contains(localFile)) {
                 filesForSync.push(localFile);
                 allFiles++;
-                updateNotification();
             }
         }
-        if (filesForSync.size() > 0) {
-            if (mNotificationId == 0)
-                createNotification();
+        checkAutosync();
+        if (filesForSync.size() > 0 && !autosync) {
+            startSync();
+        } else if (filesForSync.size() == 0 && autosync) {
+            startAutosync();
+        } else if (filesForSync.size() > 0 && autosync) {
+            startSync();
+            startAutosync();
         } else {
             stopSelf();
             return START_NOT_STICKY;
         }
-        startSync();
         return START_STICKY;
     }
 
+    private void startAutosync() {
+        handler = new Handler();
+        final long finalIntervalInMills = 30 * 1000;
+        handlerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!syncInProgress) {
+                    refreshFiles();
+                    if (filesForSync.size() > 0 && connectionAvailable()) {
+                        startSync();
+                    }
+                }
+                checkAutosync();
+                if (autosync) {
+                    handler.postDelayed(this, finalIntervalInMills);
+                }
+            }
+        };
+        handler.postDelayed(handlerRunnable, finalIntervalInMills);
+    }
+
+    private boolean checkAutosync() {
+        autosync = false;
+        if (preferenceService.getSyncProactive() && Util.isMyServiceRunning(ProactiveService.class, this)) {
+            autosync = true;
+        }
+        if (preferenceService.getSyncReactive() && Util.isMyServiceRunning(ReactiveService.class, this)) {
+            autosync = true;
+        }
+        return autosync;
+    }
+
     private void startSync() {
+        updateNotification();
         if (!filesForSync.empty()) {
-            LocalFile localFile = filesForSync.pop();
+            syncInProgress = true;
+            final LocalFile localFile = filesForSync.pop();
             fileUploadService.uploadFile(localFile, new FileUploadService.OnFileUploadListener() {
                 @Override
                 public void onSuccess() {
                     updateNotification();
+                    sendFileSyncedEvent(localFile);
+                    syncInProgress = false;
                     startSync();
                 }
 
                 @Override
                 public void unauthorized() {
+                    syncInProgress = false;
                     stopSelf();
                 }
 
                 @Override
                 public void onError() {
                     updateNotification();
+                    sendFileSyncedEvent(localFile);
+                    syncInProgress = false;
                     startSync();
                 }
             });
-        } else {
+        } else if (!autosync) {
             stopSelf();
         }
     }
 
     private void updateNotification() {
+        if (mNotificationId == 0) {
+            createNotification();
+            return;
+        }
         mBuilder.setProgress(allFiles, allFiles - filesForSync.size(), false);
         Notification notification = mBuilder.build();
         mNotificationManager.notify(mNotificationId, notification);
@@ -181,13 +245,40 @@ public class SyncService extends Service {
         if (mNotificationManager != null && mNotificationId != 0) {
             mNotificationManager.cancel(mNotificationId);
         }
+        if (handler != null && handlerRunnable != null) {
+            handler.removeCallbacks(handlerRunnable);
+        }
         super.onDestroy();
     }
+
+    private SyncBinder mBinder = new SyncBinder();
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
     }
 
+    private OnFileSyncListener filesSyncListener;
+
+    public class SyncBinder extends Binder {
+
+        public List<LocalFile> getSyncFiles() {
+            return filesForSync;
+        }
+
+        public void setSyncListener(OnFileSyncListener onFileSyncListener) {
+            filesSyncListener = onFileSyncListener;
+        }
+    }
+
+    public interface OnFileSyncListener {
+        void newFileSynced(LocalFile localFile);
+    }
+
+    private void sendFileSyncedEvent(LocalFile localFile) {
+        if (filesSyncListener != null) {
+            filesSyncListener.newFileSynced(localFile);
+        }
+    }
 }
